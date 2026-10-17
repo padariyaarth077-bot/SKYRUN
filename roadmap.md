@@ -1,0 +1,3 @@
+- [ ] Build the Skyrun Chicago chauffeur homepage from the supplied brief and business-card identity.
+- [ ] Add responsive navigation, booking/contact request interactions, service and fleet storytelling, FAQ, and footer.
+- [ ] Validate the homepage render, responsive layout, and current build diagnostics.
