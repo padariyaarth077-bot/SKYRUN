@@ -185,6 +185,18 @@ describe("Callback route renders the loading state", () => {
 // ── Route-tree correctness: index route id ────────────────────────────────────
 
 describe("Route tree: index vs layout ids", () => {
+  it.each([
+    "/admin/customer/customer",
+    "/admin/ride-request/ride",
+    "/admin/quote/quote",
+    "/admin/booking/booking",
+  ])("new core detail route %s remains behind the existing authenticated layout", (path) => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+    const matches = router.matchRoutes(path);
+    expect(matches.some((match) => match.routeId === "/_authenticated")).toBe(true);
+    expect(router.routesById["/_authenticated"].options.beforeLoad).toBeTypeOf("function");
+    expect(matches.at(-1)?.routeId.endsWith("/$id")).toBe(true);
+  });
   it("login path resolves to the index route (id ends with /)", () => {
     const router = createRouter({
       routeTree,

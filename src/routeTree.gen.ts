@@ -30,14 +30,20 @@ import { Route as SpecialOccasionsRouteImport } from './routes/special-occasions
 import { Route as TermsAndConditionsRouteImport } from './routes/terms-and-conditions'
 import { Route as J1s30MRp_geRZtdPP860RwIndexRouteImport } from './routes/j1s30MRp_geRZtdPP860Rw.index'
 import { Route as J1s30MRp_geRZtdPP860RwForgotPasswordRouteImport } from './routes/j1s30MRp_geRZtdPP860Rw.forgot-password'
+import { Route as QuoteAcceptRouteImport } from './routes/quote.accept'
 import { Route as R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRouteImport } from './routes/3ZiG4lFP04tFD1Iv4Vv97g.auth.callback'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminChatConversationsRouteImport } from './routes/_authenticated/admin.chat-conversations'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as ApiWebhooksResendRouteImport } from './routes/api.webhooks.resend'
+import { Route as AuthenticatedAdminBookingIdRouteImport } from './routes/_authenticated/admin.booking.$id'
+import { Route as AuthenticatedAdminCustomerIdRouteImport } from './routes/_authenticated/admin.customer.$id'
 import { Route as AuthenticatedAdminLeadsIndexRouteImport } from './routes/_authenticated/admin.leads.index'
 import { Route as AuthenticatedAdminLeadsIdRouteImport } from './routes/_authenticated/admin.leads.$id'
 import { Route as AuthenticatedAdminMModuleRouteImport } from './routes/_authenticated/admin.m.$module'
+import { Route as AuthenticatedAdminQuoteIdRouteImport } from './routes/_authenticated/admin.quote.$id'
+import { Route as AuthenticatedAdminRideRequestIdRouteImport } from './routes/_authenticated/admin.ride-request.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -145,6 +151,11 @@ const J1s30MRp_geRZtdPP860RwForgotPasswordRoute =
     path: '/forgot-password',
     getParentRoute: () => J1s30MRp_geRZtdPP860RwRoute,
   } as any)
+const QuoteAcceptRoute = QuoteAcceptRouteImport.update({
+  id: '/quote/accept',
+  path: '/quote/accept',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute =
   R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRouteImport.update({
     id: '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback',
@@ -174,6 +185,23 @@ const AuthenticatedAdminSettingsRoute =
     path: '/admin/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiWebhooksResendRoute = ApiWebhooksResendRouteImport.update({
+  id: '/api/webhooks/resend',
+  path: '/api/webhooks/resend',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminBookingIdRoute =
+  AuthenticatedAdminBookingIdRouteImport.update({
+    id: '/admin/booking/$id',
+    path: '/admin/booking/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminCustomerIdRoute =
+  AuthenticatedAdminCustomerIdRouteImport.update({
+    id: '/admin/customer/$id',
+    path: '/admin/customer/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminLeadsIndexRoute =
   AuthenticatedAdminLeadsIndexRouteImport.update({
     id: '/admin/leads/',
@@ -190,6 +218,18 @@ const AuthenticatedAdminMModuleRoute =
   AuthenticatedAdminMModuleRouteImport.update({
     id: '/admin/m/$module',
     path: '/admin/m/$module',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminQuoteIdRoute =
+  AuthenticatedAdminQuoteIdRouteImport.update({
+    id: '/admin/quote/$id',
+    path: '/admin/quote/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminRideRequestIdRoute =
+  AuthenticatedAdminRideRequestIdRouteImport.update({
+    id: '/admin/ride-request/$id',
+    path: '/admin/ride-request/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -213,14 +253,20 @@ export interface FileRoutesByFullPath {
   '/special-occasions': typeof SpecialOccasionsRoute
   '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/j1s30MRp_geRZtdPP860Rw/forgot-password': typeof J1s30MRp_geRZtdPP860RwForgotPasswordRoute
+  '/quote/accept': typeof QuoteAcceptRoute
   '/j1s30MRp_geRZtdPP860Rw/': typeof J1s30MRp_geRZtdPP860RwIndexRoute
   '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback': typeof R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute
   '/admin/chat-conversations': typeof AuthenticatedAdminChatConversationsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/booking/$id': typeof AuthenticatedAdminBookingIdRoute
+  '/admin/customer/$id': typeof AuthenticatedAdminCustomerIdRoute
   '/admin/leads/$id': typeof AuthenticatedAdminLeadsIdRoute
   '/admin/m/$module': typeof AuthenticatedAdminMModuleRoute
+  '/admin/quote/$id': typeof AuthenticatedAdminQuoteIdRoute
+  '/admin/ride-request/$id': typeof AuthenticatedAdminRideRequestIdRoute
   '/admin/leads/': typeof AuthenticatedAdminLeadsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -242,14 +288,20 @@ export interface FileRoutesByTo {
   '/special-occasions': typeof SpecialOccasionsRoute
   '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/j1s30MRp_geRZtdPP860Rw/forgot-password': typeof J1s30MRp_geRZtdPP860RwForgotPasswordRoute
+  '/quote/accept': typeof QuoteAcceptRoute
   '/j1s30MRp_geRZtdPP860Rw': typeof J1s30MRp_geRZtdPP860RwIndexRoute
   '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback': typeof R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute
   '/admin/chat-conversations': typeof AuthenticatedAdminChatConversationsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/booking/$id': typeof AuthenticatedAdminBookingIdRoute
+  '/admin/customer/$id': typeof AuthenticatedAdminCustomerIdRoute
   '/admin/leads/$id': typeof AuthenticatedAdminLeadsIdRoute
   '/admin/m/$module': typeof AuthenticatedAdminMModuleRoute
+  '/admin/quote/$id': typeof AuthenticatedAdminQuoteIdRoute
+  '/admin/ride-request/$id': typeof AuthenticatedAdminRideRequestIdRoute
   '/admin/leads': typeof AuthenticatedAdminLeadsIndexRoute
 }
 export interface FileRoutesById {
@@ -274,14 +326,20 @@ export interface FileRoutesById {
   '/special-occasions': typeof SpecialOccasionsRoute
   '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/j1s30MRp_geRZtdPP860Rw/forgot-password': typeof J1s30MRp_geRZtdPP860RwForgotPasswordRoute
+  '/quote/accept': typeof QuoteAcceptRoute
   '/j1s30MRp_geRZtdPP860Rw/': typeof J1s30MRp_geRZtdPP860RwIndexRoute
   '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback': typeof R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute
   '/_authenticated/admin/chat-conversations': typeof AuthenticatedAdminChatConversationsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/booking/$id': typeof AuthenticatedAdminBookingIdRoute
+  '/_authenticated/admin/customer/$id': typeof AuthenticatedAdminCustomerIdRoute
   '/_authenticated/admin/leads/$id': typeof AuthenticatedAdminLeadsIdRoute
   '/_authenticated/admin/m/$module': typeof AuthenticatedAdminMModuleRoute
+  '/_authenticated/admin/quote/$id': typeof AuthenticatedAdminQuoteIdRoute
+  '/_authenticated/admin/ride-request/$id': typeof AuthenticatedAdminRideRequestIdRoute
   '/_authenticated/admin/leads/': typeof AuthenticatedAdminLeadsIndexRoute
 }
 export interface FileRouteTypes {
@@ -306,14 +364,20 @@ export interface FileRouteTypes {
     | '/special-occasions'
     | '/terms-and-conditions'
     | '/j1s30MRp_geRZtdPP860Rw/forgot-password'
+    | '/quote/accept'
     | '/j1s30MRp_geRZtdPP860Rw/'
     | '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback'
     | '/admin/chat-conversations'
     | '/admin/customers'
     | '/admin/settings'
+    | '/api/webhooks/resend'
     | '/admin/'
+    | '/admin/booking/$id'
+    | '/admin/customer/$id'
     | '/admin/leads/$id'
     | '/admin/m/$module'
+    | '/admin/quote/$id'
+    | '/admin/ride-request/$id'
     | '/admin/leads/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -335,14 +399,20 @@ export interface FileRouteTypes {
     | '/special-occasions'
     | '/terms-and-conditions'
     | '/j1s30MRp_geRZtdPP860Rw/forgot-password'
+    | '/quote/accept'
     | '/j1s30MRp_geRZtdPP860Rw'
     | '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback'
     | '/admin/chat-conversations'
     | '/admin/customers'
     | '/admin/settings'
+    | '/api/webhooks/resend'
     | '/admin'
+    | '/admin/booking/$id'
+    | '/admin/customer/$id'
     | '/admin/leads/$id'
     | '/admin/m/$module'
+    | '/admin/quote/$id'
+    | '/admin/ride-request/$id'
     | '/admin/leads'
   id:
     | '__root__'
@@ -366,14 +436,20 @@ export interface FileRouteTypes {
     | '/special-occasions'
     | '/terms-and-conditions'
     | '/j1s30MRp_geRZtdPP860Rw/forgot-password'
+    | '/quote/accept'
     | '/j1s30MRp_geRZtdPP860Rw/'
     | '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback'
     | '/_authenticated/admin/chat-conversations'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/settings'
+    | '/api/webhooks/resend'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/booking/$id'
+    | '/_authenticated/admin/customer/$id'
     | '/_authenticated/admin/leads/$id'
     | '/_authenticated/admin/m/$module'
+    | '/_authenticated/admin/quote/$id'
+    | '/_authenticated/admin/ride-request/$id'
     | '/_authenticated/admin/leads/'
   fileRoutesById: FileRoutesById
 }
@@ -397,7 +473,9 @@ export interface RootRouteChildren {
   ServicesRoute: typeof ServicesRoute
   SpecialOccasionsRoute: typeof SpecialOccasionsRoute
   TermsAndConditionsRoute: typeof TermsAndConditionsRoute
+  QuoteAcceptRoute: typeof QuoteAcceptRoute
   R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute: typeof R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute
+  ApiWebhooksResendRoute: typeof ApiWebhooksResendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -549,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof J1s30MRp_geRZtdPP860RwForgotPasswordRouteImport
       parentRoute: typeof J1s30MRp_geRZtdPP860RwRoute
     }
+    '/quote/accept': {
+      id: '/quote/accept'
+      path: '/quote/accept'
+      fullPath: '/quote/accept'
+      preLoaderRoute: typeof QuoteAcceptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback': {
       id: '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback'
       path: '/3ZiG4lFP04tFD1Iv4Vv97g/auth/callback'
@@ -584,6 +669,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/webhooks/resend': {
+      id: '/api/webhooks/resend'
+      path: '/api/webhooks/resend'
+      fullPath: '/api/webhooks/resend'
+      preLoaderRoute: typeof ApiWebhooksResendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/booking/$id': {
+      id: '/_authenticated/admin/booking/$id'
+      path: '/admin/booking/$id'
+      fullPath: '/admin/booking/$id'
+      preLoaderRoute: typeof AuthenticatedAdminBookingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/customer/$id': {
+      id: '/_authenticated/admin/customer/$id'
+      path: '/admin/customer/$id'
+      fullPath: '/admin/customer/$id'
+      preLoaderRoute: typeof AuthenticatedAdminCustomerIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/leads/': {
       id: '/_authenticated/admin/leads/'
       path: '/admin/leads'
@@ -605,6 +711,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminMModuleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/quote/$id': {
+      id: '/_authenticated/admin/quote/$id'
+      path: '/admin/quote/$id'
+      fullPath: '/admin/quote/$id'
+      preLoaderRoute: typeof AuthenticatedAdminQuoteIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/ride-request/$id': {
+      id: '/_authenticated/admin/ride-request/$id'
+      path: '/admin/ride-request/$id'
+      fullPath: '/admin/ride-request/$id'
+      preLoaderRoute: typeof AuthenticatedAdminRideRequestIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -613,8 +733,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminBookingIdRoute: typeof AuthenticatedAdminBookingIdRoute
+  AuthenticatedAdminCustomerIdRoute: typeof AuthenticatedAdminCustomerIdRoute
   AuthenticatedAdminLeadsIdRoute: typeof AuthenticatedAdminLeadsIdRoute
   AuthenticatedAdminMModuleRoute: typeof AuthenticatedAdminMModuleRoute
+  AuthenticatedAdminQuoteIdRoute: typeof AuthenticatedAdminQuoteIdRoute
+  AuthenticatedAdminRideRequestIdRoute: typeof AuthenticatedAdminRideRequestIdRoute
   AuthenticatedAdminLeadsIndexRoute: typeof AuthenticatedAdminLeadsIndexRoute
 }
 
@@ -624,8 +748,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminBookingIdRoute: AuthenticatedAdminBookingIdRoute,
+  AuthenticatedAdminCustomerIdRoute: AuthenticatedAdminCustomerIdRoute,
   AuthenticatedAdminLeadsIdRoute: AuthenticatedAdminLeadsIdRoute,
   AuthenticatedAdminMModuleRoute: AuthenticatedAdminMModuleRoute,
+  AuthenticatedAdminQuoteIdRoute: AuthenticatedAdminQuoteIdRoute,
+  AuthenticatedAdminRideRequestIdRoute: AuthenticatedAdminRideRequestIdRoute,
   AuthenticatedAdminLeadsIndexRoute: AuthenticatedAdminLeadsIndexRoute,
 }
 
@@ -669,8 +797,10 @@ const rootRouteChildren: RootRouteChildren = {
   ServicesRoute: ServicesRoute,
   SpecialOccasionsRoute: SpecialOccasionsRoute,
   TermsAndConditionsRoute: TermsAndConditionsRoute,
+  QuoteAcceptRoute: QuoteAcceptRoute,
   R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute:
     R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute,
+  ApiWebhooksResendRoute: ApiWebhooksResendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

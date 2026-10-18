@@ -147,6 +147,7 @@ try {
   let failureInjected = false;
   await page.route("**/*", async (route) => {
     const request = route.request();
+    if (![appUrl, status.API_URL].includes(new URL(request.url()).origin)) return route.abort();
     if (
       !failureInjected &&
       request.method() === "POST" &&
@@ -183,7 +184,7 @@ try {
   assert.equal(lead.customers.email, email);
   assert.equal(lead.ride_requests.length, 1);
   assert.equal(lead.ride_requests[0].pickup_location, fields.pickup);
-  await page.screenshot({ path: resolve("phase1-public-confirmation.png"), fullPage: true });
+  await page.screenshot({ path: resolve("phase2-public-confirmation.png"), fullPage: true });
   console.log(
     "PASS: real public form/server/RPC submission persists linked records and resets after confirmation",
   );
@@ -223,6 +224,7 @@ try {
   console.log(
     "PASS: ride enquiry/request lists link to details and contact filtering excludes ride enquiries",
   );
+  await page.getByRole("link", { name: "Open linked lead and activity" }).click();
   await page.getByText(`Ride enquiry ${lead.ride_requests[0].request_number}`).waitFor();
   await page.getByText(`Pickup: ${fields.pickup}`, { exact: true }).waitFor();
   await page.getByText(name, { exact: true }).waitFor();
@@ -248,10 +250,106 @@ try {
     ).status,
     "SUBMITTED",
   );
-  await page.screenshot({ path: resolve("phase1-admin-enquiry.png"), fullPage: true });
+  await page.screenshot({ path: resolve("phase2-admin-enquiry.png"), fullPage: true });
   console.log(
     "PASS: real local staff login, NEW filtering, customer/trip details and review workflow",
   );
+  const noteText = `Phase2 local-only note ${randomUUID()}`;
+  await page.getByRole("textbox", { name: "Activity note" }).fill(noteText);
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.getByText(noteText, { exact: true }).waitFor();
+  await page.reload();
+  await page.getByText(noteText, { exact: true }).waitFor();
+  const notes = ok(
+    await admin
+      .from("activities")
+      .select("actor_id")
+      .eq("entity_id", lead.id)
+      .eq("description", noteText),
+  );
+  assert.equal(notes.length, 1);
+  assert.equal(notes[0].actor_id, user.id);
+  console.log(
+    "PASS: actual authenticated note persists once, refreshes and records the staff actor",
+  );
+  await page.getByRole("link", { name, exact: true }).click();
+  await page.getByRole("link", { name: reference, exact: true }).waitFor();
+  await page.getByRole("link", { name: lead.ride_requests[0].request_number, exact: true }).click();
+  await page.getByText(`Pickup: ${fields.pickup}`, { exact: true }).waitFor();
+  console.log("PASS: real customer history and dedicated ride detail retain entity relationships");
+  if (process.env.SKYRUN_PHASE3_LOCAL_APPROVAL === project) {
+    await page.goto(`${appUrl}/admin/leads/${lead.id}`);
+    await page.getByRole("link", { name: "Prepare quote draft", exact: true }).click();
+    await page.getByRole("textbox", { name: "Quote amount" }).fill("125.50");
+    await page.getByLabel("Quote expiry").fill("2099-11-06T14:30");
+    await page.getByRole("textbox", { name: "Quote notes" }).fill("TEST ONLY local draft");
+    await page.getByRole("button", { name: "Save draft", exact: true }).click();
+    await page.waitForURL((url) => /\/admin\/quote\/[0-9a-f-]{36}$/.test(url.pathname));
+    const quoteId = new URL(page.url()).pathname.split("/").at(-1);
+    const quote = ok(await admin.from("quotes").select("*").eq("id", quoteId).single());
+    assert.equal(quote.status, "DRAFT");
+    assert.equal(quote.amount, 125.5);
+    assert.equal(quote.ride_request_id, lead.ride_requests[0].id);
+    assert.equal(quote.customer_id, lead.customer_id);
+    assert.equal(quote.created_by, user.id);
+    await page.reload();
+    await page.getByRole("textbox", { name: "Quote amount" }).waitFor();
+    assert.equal(await page.getByRole("textbox", { name: "Quote amount" }).inputValue(), "125.50");
+    assert.equal(
+      await page.getByRole("button", { name: /send quote|accept quote|confirm booking/i }).count(),
+      0,
+    );
+    console.log(
+      "PASS: real authenticated draft save preserves trip/customer/actor and remains unsent after reload",
+    );
+    const updatedNotes = "TEST ONLY edited quote " + randomUUID();
+    await page.getByRole("textbox", { name: "Quote notes" }).fill(updatedNotes);
+    let failedQuoteSave = false;
+    await page.route("**/*", (route) => {
+      if (![appUrl, status.API_URL].includes(new URL(route.request().url()).origin))
+        return route.abort();
+      if (
+        !failedQuoteSave &&
+        route.request().method() === "POST" &&
+        new URL(route.request().url()).origin === appUrl
+      ) {
+        failedQuoteSave = true;
+        return route.abort();
+      }
+      return route.continue();
+    });
+    await page.getByRole("button", { name: "Save draft", exact: true }).click();
+    await page.getByRole("status").filter({ hasText: "Your entries are preserved" }).waitFor();
+    assert.equal(
+      await page.getByRole("textbox", { name: "Quote notes" }).inputValue(),
+      updatedNotes,
+    );
+    await page.getByRole("button", { name: "Save draft", exact: true }).click();
+    await page
+      .getByRole("status")
+      .filter({ hasText: "Draft saved. It has not been sent." })
+      .waitFor();
+    await page.reload();
+    await page.getByRole("textbox", { name: "Quote notes" }).waitFor();
+    assert.equal(
+      await page.getByRole("textbox", { name: "Quote notes" }).inputValue(),
+      updatedNotes,
+    );
+    assert.equal(
+      ok(
+        await admin
+          .from("activities")
+          .select("id")
+          .eq("entity_type", "quote")
+          .eq("entity_id", quoteId),
+      ).length,
+      2,
+    );
+    assert.equal(ok(await admin.from("bookings").select("id").eq("quote_id", quoteId)).length, 0);
+    console.log(
+      "PASS: failed quote edit preserves entries; retry persists once with audit and no fabricated booking",
+    );
+  }
   await Promise.all(assetChecks);
   assert.equal(
     privilegedKeyExposed,
@@ -260,14 +358,14 @@ try {
   );
   console.log("PASS: loaded browser scripts contain no service-role key");
   console.log(
-    "Browser workflow: 6 checks passed; all browser requests restricted to local origins.",
+    `Browser workflow: ${process.env.SKYRUN_PHASE3_LOCAL_APPROVAL === project ? 10 : 8} checks passed; all browser requests restricted to local origins.`,
   );
 } catch (error) {
   let message = error instanceof Error ? error.message : "Browser workflow failed";
   if (page && !page.isClosed()) {
     try {
       message += `\nPage: ${page.url()}\nVisible text: ${(await page.locator("body").innerText({ timeout: 3000 })).slice(0, 1200)}`;
-      await page.screenshot({ path: resolve("phase1-browser-failure.png"), timeout: 5000 });
+      await page.screenshot({ path: resolve("phase2-browser-failure.png"), timeout: 5000 });
     } catch {}
   }
   for (const value of sensitive) if (value) message = message.replaceAll(value, "[redacted]");

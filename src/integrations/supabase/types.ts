@@ -11,6 +11,34 @@ export type Database = {
   __InternalSupabase: { PostgrestVersion: "14.18" };
   public: {
     Tables: {
+      quote_acceptance_links: Row<{
+        id: string;
+        quote_id: string;
+        business_unit_id: string;
+        token_hash: string;
+        recipient_email: string;
+        snapshot: Json;
+        expires_at: string;
+        created_by: string;
+        created_at: string;
+        provider_email_id: string | null;
+        delivered_at: string | null;
+        revoked_at: string | null;
+        accepted_at: string | null;
+        booking_id: string | null;
+      }>;
+      quote_deliveries: Row<{
+        id: string;
+        public_origin: string;
+        message_text: string;
+        is_test: boolean;
+        state: string;
+        first_attempt_at: string | null;
+        attempt_id: string | null;
+        lease_until: string | null;
+        provider_email_id: string | null;
+        created_at: string;
+      }>;
       organizations: Row<{
         id: string;
         name: string;
@@ -247,6 +275,68 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      quote_delivery_status: { Args: { _quote_id: string }; Returns: Json };
+      begin_quote_delivery: {
+        Args: {
+          _quote_id: string;
+          _delivery_id: string;
+          _token_hash: string;
+          _expected_updated_at: string;
+          _expected_ride_updated_at: string | null;
+          _reviewed_recipient: string;
+          _public_origin: string;
+          _is_test: boolean;
+          _attempt_id: string;
+        };
+        Returns: Json;
+      };
+      finish_quote_delivery: {
+        Args: { _delivery_id: string; _attempt_id: string; _provider_email_id: string | null };
+        Returns: undefined;
+      };
+      store_quote_delivery_event: {
+        Args: {
+          _event_id: string;
+          _provider_email_id: string;
+          _event_type: string;
+          _recipient: string;
+          _sender: string;
+          _payload_hash: string;
+        };
+        Returns: undefined;
+      };
+      process_quote_delivery_events: { Args: { _provider_email_id: string }; Returns: undefined };
+      customer_quote_acceptance: {
+        Args: { _token_hash: string; _accept: boolean };
+        Returns: Json;
+      };
+      prepare_quote_acceptance: {
+        Args: {
+          _link_id: string;
+          _quote_id: string;
+          _token_hash: string;
+          _expected_updated_at: string;
+        };
+        Returns: Json;
+      };
+      revoke_quote_acceptance: { Args: { _link_id: string }; Returns: undefined };
+      record_quote_delivery: {
+        Args: { _link_id: string; _provider_email_id: string };
+        Returns: undefined;
+      };
+      save_quote_draft: {
+        Args: {
+          _quote_id: string;
+          _ride_request_id: string;
+          _amount: string;
+          _currency: string;
+          _valid_until: string;
+          _notes: string;
+          _expected_updated_at: string | null;
+        };
+        Returns: string;
+      };
+
       has_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"]; _user_id: string };
         Returns: boolean;

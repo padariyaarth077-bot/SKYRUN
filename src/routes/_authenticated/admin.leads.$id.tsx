@@ -1,5 +1,6 @@
+import { setLeadStatus, readAll } from "@/lib/admin-data";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell, StatusBadge } from "@/components/admin-shell";
 import type { Database } from "@/integrations/supabase/types";
@@ -33,6 +34,7 @@ type LeadDetailRow = {
   message: string | null;
   created_at: string;
   customers: {
+    id: string;
     full_name: string;
     company_name: string | null;
     email: string | null;
@@ -53,29 +55,65 @@ function LeadDetail() {
   const { user } = Route.useRouteContext();
   const [lead, setLead] = useState<LeadDetailRow | null>(null);
   const [acts, setActs] = useState<ActivityRow[]>([]);
+  const mutationBusy = useRef(false);
+  const noteBusy = useRef(false);
+  const [statusPending, setStatusPending] = useState(false);
+  const [statusError, setStatusError] = useState("");
   const [note, setNote] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+  const [noteError, setNoteError] = useState("");
+  const [activityError, setActivityError] = useState(false);
+  const [activityLoading, setActivityLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("leads")
-      .select("*, customers(*), ride_requests(*)")
-      .eq("id", id)
-      .maybeSingle();
-    setLead(data as LeadDetailRow | null);
-    setLoadError(!!error);
-    setLoading(false);
-    const { data: a } = await supabase
-      .from("activities")
-      .select("*")
-      .eq("entity_type", "lead")
-      .eq("entity_id", id)
-      .order("created_at", { ascending: false });
-    setActs((a as ActivityRow[]) ?? []);
+    setLoading(true);
+    setLoadError(false);
+    setActivityLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*, customers(*), ride_requests(*)")
+        .eq("id", id)
+        .maybeSingle();
+      setLead(data as LeadDetailRow | null);
+      setLoadError(!!error);
+      setLoading(false);
+      try {
+        setActs(
+          await readAll<ActivityRow>((start, end) =>
+            supabase
+              .from("activities")
+              .select("*")
+              .eq("entity_type", "lead")
+              .eq("entity_id", id)
+              .order("created_at", { ascending: false })
+              .order("id")
+              .range(start, end),
+          ),
+        );
+        setActivityError(false);
+      } catch {
+        setActs([]);
+        setActivityError(true);
+      }
+    } catch {
+      setLoadError(true);
+      setLead(null);
+      setActivityError(true);
+    } finally {
+      setLoading(false);
+      setActivityLoading(false);
+    }
   }, [id]);
   useEffect(() => {
-    load();
+    setLead(null);
+    setActs([]);
+    setNote("");
+    setNoteError("");
+    setStatusError("");
+    void load();
   }, [load]);
 
   const log = (type: string, description: string) =>
@@ -88,16 +126,37 @@ function LeadDetail() {
     });
 
   const setStatus = async (status: LeadStatus) => {
-    await supabase.from("leads").update({ status }).eq("id", id);
-    await log("STATUS_CHANGE", `Status changed to ${status}`);
-    load();
+    if (mutationBusy.current || lead?.status === status) return;
+    mutationBusy.current = true;
+    setStatusPending(true);
+    setStatusError("");
+    try {
+      await setLeadStatus(id, status, user.id);
+    } catch (error) {
+      setStatusError(error instanceof Error ? error.message : "Could not save status.");
+    } finally {
+      await load();
+      mutationBusy.current = false;
+      setStatusPending(false);
+    }
   };
   const addNote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!note.trim()) return;
-    await log("NOTE", note.trim());
-    setNote("");
-    load();
+    if (!note.trim() || noteBusy.current) return;
+    noteBusy.current = true;
+    setSavingNote(true);
+    setNoteError("");
+    try {
+      const { data, error } = await log("NOTE", note.trim());
+      if (error || !data) throw new Error("Note was not confirmed");
+      setNote("");
+      await load();
+    } catch {
+      setNoteError("Could not save your note. Your text is preserved; please retry.");
+    } finally {
+      setSavingNote(false);
+      noteBusy.current = false;
+    }
   };
 
   if (!lead)
@@ -115,7 +174,7 @@ function LeadDetail() {
   const c = lead.customers;
   return (
     <AdminShell title={lead.lead_number}>
-      <Link to="/admin" className="mb-4 inline-block text-sm underline">
+      <Link to="/admin/leads" className="mb-4 inline-block text-sm underline">
         ← All leads
       </Link>
       <div className="grid gap-6 md:grid-cols-3">
@@ -132,10 +191,25 @@ function LeadDetail() {
           </div>
           {lead.ride_requests?.map((ride) => (
             <div key={ride.id} className="rounded-lg border border-border bg-card p-5">
-              <h3 className="font-semibold">Ride enquiry {ride.request_number}</h3>
+              <h3 className="font-semibold">
+                <Link to="/admin/ride-request/$id" params={{ id: ride.id }}>
+                  Ride enquiry {ride.request_number}
+                </Link>
+              </h3>
               <p>
                 {ride.status} · {ride.travel_date} · {ride.pickup_time}
               </p>
+              {lead.status === "GENUINE" &&
+                ["SUBMITTED", "UNDER_REVIEW", "QUOTE_PENDING", "QUOTED"].includes(ride.status) && (
+                  <Link
+                    to="/admin/quote/$id"
+                    params={{ id: "new" }}
+                    search={{ rideRequestId: ride.id }}
+                    className="block underline text-primary"
+                  >
+                    Prepare quote draft
+                  </Link>
+                )}
               <p>Pickup: {ride.pickup_location}</p>
               <p>Drop-off: {ride.dropoff_location}</p>
               <p>Passengers: {ride.passenger_count}</p>
@@ -146,16 +220,33 @@ function LeadDetail() {
             <h3 className="mb-3 font-semibold">Activity</h3>
             <form onSubmit={addNote} className="mb-4 flex gap-2">
               <input
+                aria-label="Activity note"
+                maxLength={4000}
+                disabled={savingNote}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Add a note…"
                 className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm"
               />
-              <button className="inline-flex rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-                Add
+              <button
+                disabled={savingNote || !note.trim()}
+                className="inline-flex rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-40"
+              >
+                {savingNote ? "Saving…" : "Add"}
               </button>
             </form>
+            {noteError && (
+              <p role="alert" className="mb-3 text-sm text-destructive">
+                {noteError}
+              </p>
+            )}
+            {activityError && (
+              <p role="alert" className="mb-3 text-sm text-destructive">
+                Could not load the activity timeline. Please reload to retry.
+              </p>
+            )}
             <ul className="space-y-3">
+              {activityLoading && <li role="status">Loading activity…</li>}
               {acts.map((a) => (
                 <li key={a.id} className="border-l-2 border-primary pl-3">
                   <div className="text-xs text-muted-foreground">
@@ -164,7 +255,9 @@ function LeadDetail() {
                   <div className="text-sm">{a.description}</div>
                 </li>
               ))}
-              {!acts.length && <li className="text-sm text-muted-foreground">No activity yet.</li>}
+              {!acts.length && !activityError && !activityLoading && (
+                <li className="text-sm text-muted-foreground">No activity yet.</li>
+              )}
             </ul>
           </div>
         </div>
@@ -173,7 +266,9 @@ function LeadDetail() {
             <h3 className="mb-2 font-semibold">Customer</h3>
             {c ? (
               <div className="space-y-1 text-sm">
-                <div>{c.full_name}</div>
+                <Link to="/admin/customer/$id" params={{ id: c.id }} className="block underline">
+                  {c.full_name}
+                </Link>
                 {c.company_name && <div>{c.company_name}</div>}
                 {c.email && (
                   <a className="block underline" href={`mailto:${c.email}`}>
@@ -190,14 +285,19 @@ function LeadDetail() {
               <p className="text-sm text-muted-foreground">No customer linked.</p>
             )}
           </div>
-          <ReviewCard status={lead.status} leadId={id} onDone={load} />
+          <ReviewCard status={lead.status} leadId={id} actorId={user.id} onDone={load} />
+          {statusError && (
+            <p role="alert" className="text-destructive">
+              {statusError}
+            </p>
+          )}
           <div className="rounded-lg border border-border bg-card p-5">
             <h3 className="mb-2 font-semibold">Change status</h3>
             <div className="flex flex-wrap gap-2">
               {STATUSES.filter((s) => s !== "GENUINE" && s !== "SPAM").map((s) => (
                 <button
                   key={s}
-                  disabled={s === lead.status}
+                  disabled={statusPending || s === lead.status}
                   onClick={() => setStatus(s)}
                   className="rounded border border-border px-2 py-1 text-xs disabled:opacity-40"
                 >
@@ -224,42 +324,36 @@ const REASONS = [
 function ReviewCard({
   status,
   leadId,
+  actorId,
   onDone,
 }: {
   status: string;
   leadId: string;
+  actorId: string;
   onDone: () => void;
 }) {
+  const busy = useRef(false);
   const [mode, setMode] = useState<null | "GENUINE" | "SPAM">(null);
   const [reason, setReason] = useState("");
   const [phase, setPhase] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   const confirm = async () => {
-    if (!mode) return;
+    if (!mode || busy.current) return;
+    busy.current = true;
     setErr(null);
-    setPhase("Reviewing…");
-    await new Promise((r) => setTimeout(r, 400));
-    setPhase("Processing…");
-    const { error } = await supabase
-      .from("leads")
-      .update({
-        status: mode,
-        reviewed_at: new Date().toISOString(),
-        spam_reason: mode === "SPAM" ? reason || null : null,
-      })
-      .eq("id", leadId);
-    if (error) {
-      setErr(error.message);
+    setPhase("Saving review…");
+    try {
+      await setLeadStatus(leadId, mode, actorId, reason);
+      setMode(null);
+      setReason("");
+    } catch (error) {
+      setErr(error instanceof Error ? error.message : "Could not save review. Please retry.");
+    } finally {
+      await onDone();
       setPhase(null);
-      return;
+      busy.current = false;
     }
-    setPhase(mode === "GENUINE" ? "✓ Genuine" : "✓ Marked as Spam");
-    await new Promise((r) => setTimeout(r, 800));
-    setMode(null);
-    setPhase(null);
-    setReason("");
-    onDone();
   };
 
   return (

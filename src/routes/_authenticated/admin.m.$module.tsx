@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { AdminPagination } from "@/components/admin-pagination";
+import { readAll } from "@/lib/admin-data";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { AdminShell, Panel, StatusBadge, timeAgo } from "@/components/admin-shell";
@@ -10,6 +12,9 @@ type ModuleRow = {
   status?: string;
   created_at: string;
   leadId?: string | null;
+  rideId?: string;
+  quoteId?: string;
+  bookingId?: string;
 };
 type Module = { title: string; desc: string; cols: string[]; available: boolean };
 
@@ -17,19 +22,29 @@ const MODULES: Record<string, Module> = {
   "contact-messages": {
     title: "Contact Messages",
     desc: "Website contact enquiries.",
-    cols: ["Lead", "Customer", "Subject", "Status", "Received"],
+    cols: ["Lead", "Customer", "Subject", "Message", "Contact", "Status", "Received"],
     available: true,
   },
   "ride-enquiries": {
     title: "Ride Enquiries",
-    desc: "Website ride enquiries awaiting review.",
-    cols: ["Lead", "Customer", "Subject", "Status", "Received"],
+    desc: "Website ride enquiries, including reviewed submissions.",
+    cols: ["Lead", "Customer", "Subject", "Message", "Contact", "Status", "Received"],
     available: true,
   },
   "ride-requests": {
     title: "Ride Requests",
     desc: "Structured transport requests.",
-    cols: ["Request", "Pickup", "Travel date", "Passengers", "Status", "Received"],
+    cols: [
+      "Request",
+      "Pickup",
+      "Drop-off",
+      "Time",
+      "Notes / luggage",
+      "Travel date",
+      "Passengers",
+      "Status",
+      "Received",
+    ],
     available: true,
   },
   quotes: {
@@ -120,82 +135,113 @@ async function loadModule(module: string): Promise<{ rows: ModuleRow[]; error: s
     case "contact-messages":
     case "ride-enquiries": {
       const source = module === "contact-messages" ? "CONTACT_FORM" : "RIDE_ENQUIRY";
-      const { data, error } = await supabase
-        .from("leads")
-        .select("id,lead_number,subject,status,created_at,customers(full_name)")
-        .eq("source", source)
-        .order("created_at", { ascending: false });
+      const data = await readAll((start, end) =>
+        supabase
+          .from("leads")
+          .select(
+            "id,lead_number,subject,message,status,created_at,customers(full_name,email,phone)",
+          )
+          .eq("source", source)
+          .order("created_at", { ascending: false })
+          .order("id")
+          .range(start, end),
+      );
       return {
         rows: (
           (data ?? []) as Array<{
             id: string;
             lead_number: string;
             subject: string | null;
+            message: string;
             status: string;
             created_at: string;
-            customers: { full_name: string } | null;
+            customers: { full_name: string; email: string | null; phone: string | null } | null;
           }>
         ).map((row) => ({
           id: row.id,
           leadId: row.id,
-          values: [row.lead_number, row.customers?.full_name ?? "—", row.subject ?? "—"],
+          values: [
+            row.lead_number,
+            row.customers?.full_name ?? "—",
+            row.subject ?? "—",
+            row.message,
+            row.customers?.email ?? row.customers?.phone ?? "—",
+          ],
           status: row.status,
           created_at: row.created_at,
         })),
-        error: error?.message ?? "",
+        error: "",
       };
     }
     case "ride-requests": {
-      const { data, error } = await supabase
-        .from("ride_requests")
-        .select(
-          "id,lead_id,request_number,pickup_location,travel_date,passenger_count,status,created_at",
-        )
-        .order("created_at", { ascending: false });
+      const data = await readAll((start, end) =>
+        supabase
+          .from("ride_requests")
+          .select(
+            "id,lead_id,request_number,pickup_location,dropoff_location,pickup_time,notes,customer_id,travel_date,passenger_count,status,created_at",
+          )
+          .order("created_at", { ascending: false })
+          .order("id")
+          .range(start, end),
+      );
       return {
         rows: (data ?? []).map((row) => ({
           id: row.id,
           leadId: row.lead_id,
+          rideId: row.id,
           values: [
             row.request_number,
             row.pickup_location,
+            row.dropoff_location ?? "—",
+            row.pickup_time ?? "—",
+            row.notes ?? "—",
             row.travel_date,
             String(row.passenger_count),
           ],
           status: row.status,
           created_at: row.created_at,
         })),
-        error: error?.message ?? "",
+        error: "",
       };
     }
     case "quotes": {
-      const { data, error } = await supabase
-        .from("quotes")
-        .select("id,travel_date,amount,currency,valid_until,status,created_at")
-        .order("created_at", { ascending: false });
+      const data = await readAll((start, end) =>
+        supabase
+          .from("quotes")
+          .select("id,travel_date,amount,currency,valid_until,status,created_at")
+          .order("created_at", { ascending: false })
+          .order("id")
+          .range(start, end),
+      );
       return {
         rows: (data ?? []).map((row) => ({
           id: row.id,
+          quoteId: row.id,
           values: [
             row.id.slice(0, 8),
             row.travel_date,
-            `${row.currency} ${row.amount}`,
+            `${row.currency} ${row.amount.toFixed(2)}`,
             new Date(row.valid_until).toLocaleDateString(),
           ],
           status: row.status,
           created_at: row.created_at,
         })),
-        error: error?.message ?? "",
+        error: "",
       };
     }
     case "bookings": {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("id,booking_number,pickup_location,travel_date,passenger_count,status,created_at")
-        .order("created_at", { ascending: false });
+      const data = await readAll((start, end) =>
+        supabase
+          .from("bookings")
+          .select("id,booking_number,pickup_location,travel_date,passenger_count,status,created_at")
+          .order("created_at", { ascending: false })
+          .order("id")
+          .range(start, end),
+      );
       return {
         rows: (data ?? []).map((row) => ({
           id: row.id,
+          bookingId: row.id,
           values: [
             row.booking_number,
             row.pickup_location,
@@ -205,7 +251,7 @@ async function loadModule(module: string): Promise<{ rows: ModuleRow[]; error: s
           status: row.status,
           created_at: row.created_at,
         })),
-        error: error?.message ?? "",
+        error: "",
       };
     }
     case "vehicles": {
@@ -306,28 +352,57 @@ export const Route = createFileRoute("/_authenticated/admin/m/$module")({
 });
 
 function ModulePage() {
+  const navigate = useNavigate();
   const { module } = Route.useParams();
+  const core = [
+    "contact-messages",
+    "ride-enquiries",
+    "ride-requests",
+    "quotes",
+    "bookings",
+  ].includes(module);
   const current = MODULES[module] ?? {
     title: "Not found",
     desc: "This section doesn't exist.",
     cols: [],
     available: false,
   };
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(0);
   const [rows, setRows] = useState<ModuleRow[]>([]);
   const [loading, setLoading] = useState(current.available);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
     if (!current.available) return;
     setLoading(true);
-    const result = await loadModule(module);
-    setRows(result.rows);
-    setError(result.error);
-    setLoading(false);
+    setError("");
+    try {
+      const result = await loadModule(module);
+      setRows(result.rows);
+      setError(result.error ? "Could not load records. Please retry." : "");
+    } catch {
+      setError("Could not load records. Please retry.");
+    } finally {
+      setLoading(false);
+    }
   }, [current.available, module]);
   useEffect(() => {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    setQ("");
+    setStatus("");
+    setPage(0);
+  }, [module]);
+  const filtered = rows.filter(
+    (r) =>
+      (!status || r.status === status) &&
+      r.values.join(" ").toLowerCase().includes(q.trim().toLowerCase()),
+  );
+  const safePage = Math.min(page, Math.max(0, Math.ceil(filtered.length / 50) - 1));
+  const displayed = core ? filtered.slice(safePage * 50, safePage * 50 + 50) : rows;
   return (
     <AdminShell
       title={current.title}
@@ -344,6 +419,50 @@ function ModulePage() {
         ) : undefined
       }
     >
+      {module === "quotes" && (
+        <p className="mb-3">
+          Create drafts from a{" "}
+          <Link to="/admin/leads" search={{ status: "GENUINE" }} className="underline">
+            Genuine enquiry
+          </Link>
+          . Open a saved quote to review its recipient and delivery status. Sending requires staff
+          approval and enabled email configuration.
+        </p>
+      )}
+      {module === "bookings" && (
+        <p className="mb-3">
+          Customer acceptance creates a pending booking. This list displays saved records and their
+          actual status; pending does not mean the ride is confirmed.
+        </p>
+      )}
+      {core && current.available && (
+        <div className="mb-3 flex flex-wrap gap-3">
+          <input
+            aria-label="Search records"
+            placeholder="Search records"
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setPage(0);
+            }}
+            className="rounded border px-3 py-2"
+          />
+          <select
+            aria-label="Record status"
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(0);
+            }}
+            className="rounded border px-3 py-2"
+          >
+            <option value="">All statuses</option>
+            {[...new Set(rows.flatMap((r) => (r.status ? [r.status] : [])))].map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <Panel>
         {!current.available ? (
           <div className="px-6 py-14 text-center">
@@ -382,11 +501,11 @@ function ModulePage() {
                 {!loading && error && (
                   <tr>
                     <td colSpan={current.cols.length} className="p-8 text-center text-destructive">
-                      Could not load records: {error}
+                      {error}
                     </td>
                   </tr>
                 )}
-                {!loading && !error && !rows.length && (
+                {!loading && !error && !filtered.length && (
                   <tr>
                     <td
                       colSpan={current.cols.length}
@@ -398,11 +517,46 @@ function ModulePage() {
                 )}
                 {!loading &&
                   !error &&
-                  rows.map((row) => (
-                    <tr key={row.id} className="border-t border-border hover:bg-muted/50">
+                  displayed.map((row) => (
+                    <tr
+                      key={row.id}
+                      onDoubleClick={(e) => {
+                        if (
+                          row.leadId &&
+                          !(e.target as HTMLElement).closest("a,button,input,select,textarea")
+                        )
+                          void navigate({ to: "/admin/leads/$id", params: { id: row.leadId } });
+                      }}
+                      className="border-t border-border hover:bg-muted/50"
+                    >
                       {row.values.map((value, index) => (
                         <td key={index} className="whitespace-nowrap px-4 py-3">
-                          {index === 0 && row.leadId ? (
+                          {index === 0 && row.quoteId ? (
+                            <Link
+                              to="/admin/quote/$id"
+                              params={{ id: row.quoteId }}
+                              search={{}}
+                              className="text-primary underline"
+                            >
+                              {value}
+                            </Link>
+                          ) : index === 0 && row.bookingId ? (
+                            <Link
+                              to="/admin/booking/$id"
+                              params={{ id: row.bookingId }}
+                              className="text-primary underline"
+                            >
+                              {value}
+                            </Link>
+                          ) : index === 0 && row.rideId ? (
+                            <Link
+                              to="/admin/ride-request/$id"
+                              params={{ id: row.rideId }}
+                              className="text-primary underline"
+                            >
+                              {value}
+                            </Link>
+                          ) : index === 0 && row.leadId ? (
                             <Link
                               to="/admin/leads/$id"
                               params={{ id: row.leadId }}
@@ -430,6 +584,9 @@ function ModulePage() {
           </div>
         )}
       </Panel>
+      {core && current.available && !loading && !error && (
+        <AdminPagination page={safePage} total={filtered.length} onChange={setPage} />
+      )}
     </AdminShell>
   );
 }

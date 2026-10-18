@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Inbox,
   AlertCircle,
@@ -36,8 +36,13 @@ const BAR: Record<string, string> = {
 };
 
 function Dashboard() {
+  const navigate = useNavigate();
   const { user } = Route.useRouteContext();
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [rideCount, setRideCount] = useState<number | null>(null);
+  const [pending, setPending] = useState(false);
+  const busy = useRef(false);
+  const [mutationError, setMutationError] = useState("");
   const [acts, setActs] = useState<
     { id: string; description: string; created_at: string; entity_id: string }[]
   >([]);
@@ -47,7 +52,8 @@ function Dashboard() {
   const load = useCallback(async () => {
     setLoadError(false);
     try {
-      const [l, a] = await Promise.all([
+      setLoading(true);
+      const [l, a, rides] = await Promise.all([
         fetchLeads(),
         supabase
           .from("activities")
@@ -55,7 +61,11 @@ function Dashboard() {
           .eq("entity_type", "lead")
           .order("created_at", { ascending: false })
           .limit(8),
+        supabase.from("ride_requests").select("id", { count: "exact", head: true }),
       ]);
+      if (a.error || rides.error || rides.count === null)
+        throw new Error("Could not load dashboard");
+      setRideCount(rides.count);
       setLeads(l);
       setActs((a.data as never) ?? []);
     } catch {
@@ -66,13 +76,8 @@ function Dashboard() {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      await supabase
-        .from("profiles")
-        .upsert({ id: user.id, full_name: user.user_metadata?.["full_name"] ?? null });
-    })();
-    load();
-  }, [load, user.id, user.user_metadata]);
+    void load();
+  }, [load]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
@@ -86,8 +91,19 @@ function Dashboard() {
   const max = Math.max(1, ...LEAD_STATUSES.map(n));
 
   const mark = async (l: Lead, s: LeadStatus) => {
-    await setLeadStatus(l.id, s, user.id);
-    load();
+    if (busy.current) return;
+    busy.current = true;
+    setPending(true);
+    setMutationError("");
+    try {
+      await setLeadStatus(l.id, s, user.id);
+    } catch (error) {
+      setMutationError(error instanceof Error ? error.message : "Could not save status.");
+    } finally {
+      await load();
+      busy.current = false;
+      setPending(false);
+    }
   };
 
   const kpis = [
@@ -107,10 +123,10 @@ function Dashboard() {
     },
     {
       label: "Genuine",
-      value: n("GENUINE") + n("CONTACTED") + n("QUALIFIED"),
+      value: n("GENUINE"),
       icon: CheckCircle2,
       tone: "text-success bg-success/12",
-      hint: `${n("QUALIFIED")} qualified`,
+      hint: "Status is Genuine",
     },
     {
       label: "Spam",
@@ -118,6 +134,20 @@ function Dashboard() {
       icon: Ban,
       tone: "text-destructive bg-destructive/10",
       hint: leads.length ? `${Math.round((n("SPAM") / leads.length) * 100)}% of all leads` : "—",
+    },
+    {
+      label: "Ride enquiries",
+      value: leads.filter((l) => l.source === "RIDE_ENQUIRY").length,
+      icon: Inbox,
+      tone: "text-primary bg-primary/10",
+      hint: "Leads with source RIDE_ENQUIRY",
+    },
+    {
+      label: "Ride requests",
+      value: rideCount,
+      icon: Inbox,
+      tone: "text-primary bg-primary/10",
+      hint: "Structured requests, all statuses",
     },
   ];
 
@@ -129,7 +159,7 @@ function Dashboard() {
         <div className="flex gap-2">
           <Link
             to="/admin/leads"
-            search={{ status: "NEW" } as never}
+            search={{ status: "NEEDS_REVIEW" } as never}
             className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
             <AlertCircle className="size-4" />
@@ -140,10 +170,15 @@ function Dashboard() {
     >
       {loadError && (
         <p role="alert">
-          Could not load leads.{" "}
+          Could not load dashboard data.{" "}
           <button onClick={load} className="underline">
             Retry
           </button>
+        </p>
+      )}
+      {mutationError && (
+        <p role="alert" className="text-destructive">
+          {mutationError}
         </p>
       )}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -159,10 +194,37 @@ function Dashboard() {
                 <k.icon className="size-4" />
               </span>
             </div>
-            <div className="mt-2 text-3xl font-bold tabular-nums">{loading ? "–" : k.value}</div>
+            <div className="mt-2 text-3xl font-bold tabular-nums">
+              {loading || loadError ? "–" : k.value}
+            </div>
             <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
               <TrendingUp className="size-3" />
-              {k.hint}
+              {!loading && !loadError && k.hint}
+              <Link
+                className="underline"
+                to={
+                  k.label === "Ride requests" || k.label === "Ride enquiries"
+                    ? "/admin/m/$module"
+                    : "/admin/leads"
+                }
+                params={
+                  k.label.startsWith("Ride")
+                    ? { module: k.label === "Ride requests" ? "ride-requests" : "ride-enquiries" }
+                    : {}
+                }
+                search={{
+                  status:
+                    k.label === "Needs review"
+                      ? "NEEDS_REVIEW"
+                      : k.label === "Genuine"
+                        ? "GENUINE"
+                        : k.label === "Spam"
+                          ? "SPAM"
+                          : undefined,
+                }}
+              >
+                View
+              </Link>
             </div>
           </div>
         ))}
@@ -175,7 +237,7 @@ function Dashboard() {
           action={
             <Link
               to="/admin/leads"
-              search={{ status: "NEW" } as never}
+              search={{ status: "NEEDS_REVIEW" } as never}
               className="flex items-center gap-1 text-xs font-medium text-primary"
             >
               View all <ArrowRight className="size-3" />
@@ -183,46 +245,54 @@ function Dashboard() {
           }
         >
           <ul className="divide-y divide-border">
-            {!loading && !needs.length && (
+            {!loading && !loadError && !needs.length && (
               <li className="p-6 text-center text-sm text-muted-foreground">
                 All caught up — no leads waiting for review.
               </li>
             )}
-            {needs.slice(0, 6).map((l) => (
-              <li
-                key={l.id}
-                className="flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-muted/50"
-              >
-                <div className="min-w-0 flex-1">
-                  <Link
-                    to="/admin/leads/$id"
-                    params={{ id: l.id }}
-                    className="text-sm font-semibold hover:text-primary"
-                  >
-                    {l.customers?.full_name ?? "Unknown"}{" "}
-                    <span className="font-normal text-muted-foreground">· {l.lead_number}</span>
-                  </Link>
-                  <div className="truncate text-xs text-muted-foreground">
-                    {l.subject ?? "No subject"} · {l.source} · {timeAgo(l.created_at)}
+            {!loading &&
+              !loadError &&
+              needs.slice(0, 6).map((l) => (
+                <li
+                  key={l.id}
+                  onDoubleClick={(e) => {
+                    if (!(e.target as HTMLElement).closest("a,button,input,select,textarea"))
+                      void navigate({ to: "/admin/leads/$id", params: { id: l.id } });
+                  }}
+                  className="flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-muted/50"
+                >
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      to="/admin/leads/$id"
+                      params={{ id: l.id }}
+                      className="text-sm font-semibold hover:text-primary"
+                    >
+                      {l.customers?.full_name ?? "Unknown"}{" "}
+                      <span className="font-normal text-muted-foreground">· {l.lead_number}</span>
+                    </Link>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {l.subject ?? "No subject"} · {l.source} · {timeAgo(l.created_at)}
+                    </div>
                   </div>
-                </div>
-                <StatusBadge status={l.status} />
-                <div className="flex gap-1.5">
-                  <button
-                    onClick={() => mark(l, "GENUINE")}
-                    className="rounded-md border border-success/40 px-2.5 py-1 text-xs font-semibold text-success hover:bg-success/10"
-                  >
-                    Genuine
-                  </button>
-                  <button
-                    onClick={() => mark(l, "SPAM")}
-                    className="rounded-md border border-destructive/30 px-2.5 py-1 text-xs font-semibold text-destructive hover:bg-destructive/10"
-                  >
-                    Spam
-                  </button>
-                </div>
-              </li>
-            ))}
+                  <StatusBadge status={l.status} />
+                  <div className="flex gap-1.5">
+                    <button
+                      disabled={pending}
+                      onClick={() => mark(l, "GENUINE")}
+                      className="rounded-md border border-success/40 px-2.5 py-1 text-xs font-semibold text-success hover:bg-success/10"
+                    >
+                      Genuine
+                    </button>
+                    <button
+                      disabled={pending}
+                      onClick={() => mark(l, "SPAM")}
+                      className="rounded-md border border-destructive/30 px-2.5 py-1 text-xs font-semibold text-destructive hover:bg-destructive/10"
+                    >
+                      Spam
+                    </button>
+                  </div>
+                </li>
+              ))}
           </ul>
         </Panel>
 
@@ -239,12 +309,14 @@ function Dashboard() {
                   <span className="font-medium group-hover:text-primary">
                     {s.charAt(0) + s.slice(1).toLowerCase()}
                   </span>
-                  <span className="tabular-nums text-muted-foreground">{n(s)}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {loading || loadError ? "–" : n(s)}
+                  </span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-muted">
                   <div
                     className={`h-full rounded-full transition-all duration-700 ${BAR[s]}`}
-                    style={{ width: `${(n(s) / max) * 100}%` }}
+                    style={{ width: `${loading || loadError ? 0 : (n(s) / max) * 100}%` }}
                   />
                 </div>
               </Link>
@@ -278,25 +350,34 @@ function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {leads.slice(0, 6).map((l) => (
-                  <tr key={l.id} className="border-t border-border hover:bg-muted/50">
-                    <td className="px-4 py-2.5">
-                      <Link
-                        to="/admin/leads/$id"
-                        params={{ id: l.id }}
-                        className="font-semibold text-primary"
-                      >
-                        {l.lead_number}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-2.5">{l.customers?.full_name ?? "—"}</td>
-                    <td className="px-4 py-2.5 text-muted-foreground">{l.source}</td>
-                    <td className="px-4 py-2.5">
-                      <StatusBadge status={l.status} />
-                    </td>
-                    <td className="px-4 py-2.5 text-muted-foreground">{timeAgo(l.created_at)}</td>
-                  </tr>
-                ))}
+                {!loading &&
+                  !loadError &&
+                  leads.slice(0, 6).map((l) => (
+                    <tr
+                      key={l.id}
+                      onDoubleClick={(e) => {
+                        if (!(e.target as HTMLElement).closest("a,button,input,select,textarea"))
+                          void navigate({ to: "/admin/leads/$id", params: { id: l.id } });
+                      }}
+                      className="border-t border-border hover:bg-muted/50"
+                    >
+                      <td className="px-4 py-2.5">
+                        <Link
+                          to="/admin/leads/$id"
+                          params={{ id: l.id }}
+                          className="font-semibold text-primary"
+                        >
+                          {l.lead_number}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-2.5">{l.customers?.full_name ?? "—"}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground">{l.source}</td>
+                      <td className="px-4 py-2.5">
+                        <StatusBadge status={l.status} />
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground">{timeAgo(l.created_at)}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -305,23 +386,34 @@ function Dashboard() {
         <div className="space-y-4">
           <Panel title="Recent activity">
             <ul className="space-y-3 p-4">
-              {!acts.length && <li className="text-sm text-muted-foreground">No activity yet.</li>}
-              {acts.map((a) => (
-                <li key={a.id} className="flex gap-3">
-                  <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
-                  <div className="min-w-0 text-sm">
-                    <Link
-                      to="/admin/leads/$id"
-                      params={{ id: a.entity_id }}
-                      className="font-semibold hover:text-primary"
-                    >
-                      Lead
-                    </Link>{" "}
-                    <span className="text-muted-foreground">{a.description}</span>
-                    <div className="text-xs text-muted-foreground">{timeAgo(a.created_at)}</div>
-                  </div>
-                </li>
-              ))}
+              {!loading && !loadError && !acts.length && (
+                <li className="text-sm text-muted-foreground">No activity yet.</li>
+              )}
+              {!loading &&
+                !loadError &&
+                acts.map((a) => (
+                  <li
+                    key={a.id}
+                    onDoubleClick={(e) => {
+                      if (!(e.target as HTMLElement).closest("a,button,input,select,textarea"))
+                        void navigate({ to: "/admin/leads/$id", params: { id: a.entity_id } });
+                    }}
+                    className="flex gap-3"
+                  >
+                    <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
+                    <div className="min-w-0 text-sm">
+                      <Link
+                        to="/admin/leads/$id"
+                        params={{ id: a.entity_id }}
+                        className="font-semibold hover:text-primary"
+                      >
+                        Lead
+                      </Link>{" "}
+                      <span className="text-muted-foreground">{a.description}</span>
+                      <div className="text-xs text-muted-foreground">{timeAgo(a.created_at)}</div>
+                    </div>
+                  </li>
+                ))}
             </ul>
           </Panel>
           <Panel title="Quick actions">
@@ -346,7 +438,7 @@ function Dashboard() {
                 className="flex items-center gap-2 rounded-md border border-border p-2.5 text-sm hover:border-primary hover:text-primary"
               >
                 <Plus className="size-4" />
-                New quote
+                Quotes
               </Link>
               <Link
                 to="/admin/m/$module"
@@ -354,7 +446,7 @@ function Dashboard() {
                 className="flex items-center gap-2 rounded-md border border-border p-2.5 text-sm hover:border-primary hover:text-primary"
               >
                 <Plus className="size-4" />
-                New booking
+                Bookings
               </Link>
             </div>
           </Panel>

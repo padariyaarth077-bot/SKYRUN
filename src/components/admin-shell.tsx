@@ -83,7 +83,12 @@ const NAV: { section: string; items: NavItem[] }[] = [
     section: "Leads",
     items: [
       { label: "All Leads", icon: Inbox, to: "/admin/leads" },
-      { label: "Needs Review", icon: AlertCircle, to: "/admin/leads", search: { status: "NEW" } },
+      {
+        label: "Needs Review",
+        icon: AlertCircle,
+        to: "/admin/leads",
+        search: { status: "NEEDS_REVIEW" },
+      },
       m("Contact Messages", Mail, "contact-messages"),
       m("Ride Enquiries", Car, "ride-enquiries"),
       { label: "Chat Conversations", icon: MessageSquare, to: "/admin/chat-conversations" },
@@ -152,7 +157,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
         <div className="mt-0.5 text-xs text-adm-side-muted">Operations Center</div>
       </div>
-      <div className="flex-1 space-y-5 overflow-y-auto px-3 pb-6">
+      <div className="flex-1 space-y-5 overflow-y-auto px-3 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {NAV.map((g) => (
           <div key={g.section}>
             <div className="px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-adm-side-muted">
@@ -233,7 +238,8 @@ export function AdminShell({
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search leads, customers…"
+              aria-label="Search leads"
+              placeholder="Search leads by customer or reference…"
               className="w-full rounded-md border border-input bg-muted/60 py-1.5 pl-8 pr-3 text-sm outline-none focus:border-ring focus:bg-card"
             />
           </form>

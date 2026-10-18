@@ -1,5 +1,7 @@
 # Phase 1 verification — updated 18 October 2026
 
+**Later hosted update:** following the owner's instruction to proceed and Supabase login, the specific Phase 1 migration was applied to cudisqrugjupstgdeqac. Actual public Worker submissions and concurrent duplicate retries passed; two labelled enquiries were retained. See [HOSTED-VERIFICATION.md](HOSTED-VERIFICATION.md) for the current results, references and remaining authenticated staff UI limitations. Statements below about hosted application being pending describe the earlier local verification stage.
+
 ## 1. Overall status
 
 **Local Phase 1 verification complete; hosted application remains pending approval.** The customer ride-enquiry workflow was verified locally, including real Supabase concurrency, rollback, permissions, RLS and browser tests. The subsequently authorized maintenance pass resolved all ten TypeScript errors and all 398 lint errors. Hosted deployment was outside the authorized work.
