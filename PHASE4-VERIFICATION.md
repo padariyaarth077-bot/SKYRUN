@@ -1,3 +1,8 @@
+
+## Hosted release update — 19 October 2026
+
+The two reviewed fixes were applied with explicit owner approval; the ten targeted read-only postflight checks passed. Worker deployment succeeded (8bf14ff7-464b-4022-8f0d-9e056669b181). The earlier HOLD findings below are historical, corrected by this release. End-to-end live verification remains blocked by unconfirmed provider delivery; see PHASE4-LIVE-VERIFICATION.md. No reset, deletion, project relink or ledger repair occurred.
+
 ## Approved hosted release — 19 October 2026
 
 This section supersedes earlier local-only release status below; earlier results are retained as historical evidence. The owner explicitly approved these two targeted hosted migrations, GitHub publication and Worker deployment, plus one labelled live test/email. At 10:42 UTC both migrations committed successfully to verified project cudisqrugjupstgdeqac in order: 20261019080000_phase4_authorization_hardening.sql, then 20261019090000_phase4_booking_deposits.sql. No reset, deletion, relink or migration-ledger repair was executed.

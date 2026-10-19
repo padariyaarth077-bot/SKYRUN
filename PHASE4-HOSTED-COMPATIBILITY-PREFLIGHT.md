@@ -1,3 +1,8 @@
+
+## Hosted release update — 19 October 2026
+
+The two reviewed fixes were applied with explicit owner approval; the ten targeted read-only postflight checks passed. Worker deployment succeeded (8bf14ff7-464b-4022-8f0d-9e056669b181). The earlier HOLD findings below are historical, corrected by this release. End-to-end live verification remains blocked by unconfirmed provider delivery; see PHASE4-LIVE-VERIFICATION.md. No reset, deletion, project relink or ledger repair occurred.
+
 # Phase 4 hosted compatibility preflight
 
 **Decision: HOLD — structurally compatible, but incompatible with the required release-security guarantees as written.**
