@@ -55,8 +55,16 @@ const MODULES: Record<string, Module> = {
   },
   bookings: {
     title: "Bookings",
-    desc: "Confirmed rides on the schedule.",
-    cols: ["Booking", "Pickup", "Travel date", "Passengers", "Status", "Created"],
+    desc: "Accepted bookings awaiting review and bookings in all recorded statuses.",
+    cols: [
+      "Booking",
+      "Pickup",
+      "Travel date",
+      "Passengers",
+      "Required deposit",
+      "Status",
+      "Created",
+    ],
     available: true,
   },
   vehicles: {
@@ -233,7 +241,9 @@ async function loadModule(module: string): Promise<{ rows: ModuleRow[]; error: s
       const data = await readAll((start, end) =>
         supabase
           .from("bookings")
-          .select("id,booking_number,pickup_location,travel_date,passenger_count,status,created_at")
+          .select(
+            "id,booking_number,pickup_location,travel_date,passenger_count,status,created_at,required_deposit_amount,currency",
+          )
           .order("created_at", { ascending: false })
           .order("id")
           .range(start, end),
@@ -247,6 +257,9 @@ async function loadModule(module: string): Promise<{ rows: ModuleRow[]; error: s
             row.pickup_location,
             row.travel_date,
             String(row.passenger_count),
+            row.required_deposit_amount == null
+              ? "Missing — review required"
+              : `${row.currency} ${row.required_deposit_amount.toFixed(2)}`,
           ],
           status: row.status,
           created_at: row.created_at,

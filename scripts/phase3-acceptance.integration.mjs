@@ -285,7 +285,14 @@ test("eight concurrent accepts produce exactly one pending booking and two accep
   assert.equal(b.customer_id, o.quote.customer_id);
   assert.equal(b.confirmed_at, null);
   assert.deepEqual(ok(await other.from("bookings").select("id").eq("id", b.id)), []);
-  assert.deepEqual(ok(await anon.from("bookings").select("id").eq("id", b.id)), []);
+  const anonymousBookingRead = await anon.from("bookings").select("id").eq("id", b.id);
+  // Phase 4 removes anonymous SELECT entirely; earlier Phase 3 uses RLS filtering.
+  if (sql("SELECT has_table_privilege('anon','public.bookings','SELECT');") === "t") {
+    assert.deepEqual(ok(anonymousBookingRead), []);
+  } else {
+    assert.equal(anonymousBookingRead.error?.code, "42501");
+    assert.equal(anonymousBookingRead.data, null);
+  }
   assert.deepEqual(ok(await other.from("quotes").select("id").eq("id", o.quoteId)), []);
   const acts = ok(
     await admin

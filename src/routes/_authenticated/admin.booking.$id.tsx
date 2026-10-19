@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { BookingDeposits } from "@/components/booking-deposits";
 import { readAll } from "@/lib/admin-data";
 import { AdminShell, Panel, StatusBadge } from "@/components/admin-shell";
 import type { Database } from "@/integrations/supabase/types";
@@ -113,12 +114,29 @@ function BookingDetail() {
               </p>
             </div>
           </Panel>
+          <Panel title="Deposit and booking operations">
+            <BookingDeposits booking={booking} onSaved={load} />
+          </Panel>
           <Panel title="Activity">
             <ul className="p-4">
               {acts.map((a) => (
                 <li key={a.id}>
                   {a.activity_type} · {new Date(a.created_at).toLocaleString()}
                   <p>{a.description}</p>
+                  <p>Actor: {a.actor_id ?? "Customer acceptance / system"}</p>
+                  {a.metadata &&
+                    typeof a.metadata === "object" &&
+                    !Array.isArray(a.metadata) &&
+                    a.metadata["authoritative"] === true && <p>Authoritative booking operation</p>}
+                  {a.metadata &&
+                    typeof a.metadata === "object" &&
+                    !Array.isArray(a.metadata) &&
+                    a.metadata["payload"] &&
+                    typeof a.metadata["payload"] === "object" &&
+                    !Array.isArray(a.metadata["payload"]) &&
+                    typeof a.metadata["payload"]["reason"] === "string" && (
+                      <p>Reason: {a.metadata["payload"]["reason"]}</p>
+                    )}
                 </li>
               ))}
               {!acts.length && <li>No booking activity yet.</li>}

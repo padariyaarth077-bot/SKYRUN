@@ -11,6 +11,28 @@ export type Database = {
   __InternalSupabase: { PostgrestVersion: "14.18" };
   public: {
     Tables: {
+      booking_deposit_receipts: Row<{
+        id: string;
+        booking_id: string;
+        business_unit_id: string;
+        external_reference: string;
+        amount: number;
+        currency: string;
+        received_at: string;
+        recorded_by: string;
+        recorded_at: string;
+        verified_by: string | null;
+        verified_at: string | null;
+      }>;
+      booking_deposit_reversals: Row<{
+        id: string;
+        receipt_id: string;
+        booking_id: string;
+        business_unit_id: string;
+        reason: string;
+        actor_id: string;
+        created_at: string;
+      }>;
       quote_acceptance_links: Row<{
         id: string;
         quote_id: string;
@@ -226,6 +248,7 @@ export type Database = {
         passenger_count: number;
         status: Database["public"]["Enums"]["booking_status"];
         final_amount: number | null;
+        required_deposit_amount: number | null;
         currency: string;
         notes: string | null;
         confirmed_at: string | null;
@@ -275,6 +298,17 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      can_manage_booking: { Args: { _business_unit_id: string }; Returns: boolean };
+      phase4_booking_action: {
+        Args: {
+          _booking_id: string;
+          _operation_id: string;
+          _action: string;
+          _payload: Json;
+          _expected_updated_at: string;
+        };
+        Returns: string;
+      };
       quote_delivery_status: { Args: { _quote_id: string }; Returns: Json };
       begin_quote_delivery: {
         Args: {
