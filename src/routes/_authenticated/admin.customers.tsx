@@ -1,3 +1,4 @@
+import { possibleDuplicates } from "@/lib/phase5";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,16 +62,25 @@ function Customers() {
             : `${rows.length} customers on file`
       }
       actions={
-        <input
-          aria-label="Search customers"
-          value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            setPage(0);
-          }}
-          placeholder="Name, email or phone"
-          className="rounded border px-3 py-2"
-        />
+        <div className="flex flex-wrap gap-3">
+          <button
+            disabled={loading}
+            className="rounded border px-3 py-2"
+            onClick={() => void load()}
+          >
+            Refresh
+          </button>
+          <input
+            aria-label="Search customers"
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setPage(0);
+            }}
+            placeholder="Name, email or phone"
+            className="rounded border px-3 py-2"
+          />
+        </div>
       }
     >
       <Panel>
@@ -78,7 +88,7 @@ function Customers() {
           <table className="w-full text-sm">
             <thead>
               <tr>
-                {["Name", "Company", "Email", "Phone", "Added"].map((h) => (
+                {["Name", "Company", "Email", "Phone", "Duplicate review", "Added"].map((h) => (
                   <th key={h} className="p-3 text-left">
                     {h}
                   </th>
@@ -88,13 +98,13 @@ function Customers() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="p-6">
+                  <td colSpan={6} className="p-6">
                     Loading customers…
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={5} role="alert" className="p-6">
+                  <td colSpan={6} role="alert" className="p-6">
                     Could not load customers.{" "}
                     <button onClick={load} className="underline">
                       Retry
@@ -117,12 +127,17 @@ function Customers() {
                       <td>{c.company_name ?? "—"}</td>
                       <td>{c.email ? <a href={`mailto:${c.email}`}>{c.email}</a> : "—"}</td>
                       <td>{c.phone ? <a href={`tel:${c.phone}`}>{c.phone}</a> : "—"}</td>
+                      <td>
+                        {possibleDuplicates(c, rows).length
+                          ? "Possible duplicate — open profile to review"
+                          : "—"}
+                      </td>
                       <td>{timeAgo(c.created_at)}</td>
                     </tr>
                   ))}
                   {!shown.length && (
                     <tr>
-                      <td colSpan={5} className="p-6">
+                      <td colSpan={6} className="p-6">
                         No customers match this search.
                       </td>
                     </tr>

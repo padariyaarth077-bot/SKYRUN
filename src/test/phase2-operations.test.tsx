@@ -1,11 +1,12 @@
 import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { ComponentType, ReactNode } from "react";
-const { from, params } = vi.hoisted(() => ({
+const { from, rpc, params } = vi.hoisted(() => ({
   from: vi.fn(),
+  rpc: vi.fn(),
   params: { id: "customer", module: "contact-messages" },
 }));
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { from } }));
+vi.mock("@/integrations/supabase/client", () => ({ supabase: { from, rpc } }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (options: unknown) => ({ options, useParams: () => params }),
   useNavigate: () => vi.fn(),
@@ -42,6 +43,8 @@ const Customers = CustomersRoute.options.component as ComponentType,
   Module = ModuleRoute.options.component as ComponentType;
 const customer = {
   id: "customer",
+  business_unit_id: "unit",
+  updated_at: "2026-10-21T12:00:00Z",
   full_name: "Ava",
   email: "ava@example.test",
   phone: "12345",
@@ -53,12 +56,15 @@ function chain(data: unknown, error: unknown = null) {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
-    range: vi.fn().mockResolvedValue({ data, error }),
+    range: vi
+      .fn()
+      .mockResolvedValue({ data: Array.isArray(data) || data === null ? data : [data], error }),
     maybeSingle: vi.fn().mockResolvedValue({ data, error }),
   };
 }
 beforeEach(() => {
   vi.resetAllMocks();
+  rpc.mockResolvedValue({ data: false, error: null });
   params.id = "customer";
   params.module = "contact-messages";
 });
@@ -124,6 +130,7 @@ it("loads linked customer history scoped by customer id", async () => {
     "/admin/leads/lead",
   );
   expect(leads.eq).toHaveBeenCalledWith("customer_id", "customer");
+  expect(leads.eq).toHaveBeenCalledWith("business_unit_id", "unit");
 });
 it("distinguishes missing customer from forbidden/failed history", async () => {
   from.mockReturnValue(chain(null));

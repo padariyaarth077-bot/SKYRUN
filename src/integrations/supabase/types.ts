@@ -11,6 +11,16 @@ export type Database = {
   __InternalSupabase: { PostgrestVersion: "14.18" };
   public: {
     Tables: {
+      service_configuration: Row<{
+        id: string;
+        business_unit_id: string;
+        kind: "service" | "service_area";
+        name: string;
+        description: string;
+        is_active: boolean;
+        created_at: string;
+        updated_at: string;
+      }>;
       booking_deposit_receipts: Row<{
         id: string;
         booking_id: string;
@@ -258,6 +268,7 @@ export type Database = {
         updated_at: string;
       }>;
       vehicle_categories: Row<{
+        image_path: string | null;
         id: string;
         business_unit_id: string;
         name: string;
@@ -271,6 +282,7 @@ export type Database = {
         updated_at: string;
       }>;
       vehicles: Row<{
+        image_path: string | null;
         id: string;
         business_unit_id: string;
         vehicle_category_id: string;
@@ -298,6 +310,18 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      can_manage_operations: { Args: { _business_unit_id: string }; Returns: boolean };
+      phase5_save: {
+        Args: {
+          _kind: string;
+          _id: string;
+          _business_unit_id: string;
+          _payload: Json;
+          _expected_updated_at: string | null;
+          _operation_id: string;
+        };
+        Returns: string;
+      };
       can_manage_booking: { Args: { _business_unit_id: string }; Returns: boolean };
       phase4_booking_action: {
         Args: {

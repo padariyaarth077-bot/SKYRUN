@@ -1,6 +1,8 @@
+import { ServiceConfiguration } from "@/components/service-configuration";
+import { FleetImages } from "@/components/fleet-images";
 import { AdminPagination } from "@/components/admin-pagination";
 import { readAll } from "@/lib/admin-data";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { ArrowRight, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { AdminShell, Panel, StatusBadge, timeAgo } from "@/components/admin-shell";
@@ -111,13 +113,13 @@ const MODULES: Record<string, Module> = {
   },
   services: {
     title: "Services",
-    desc: "The approved schema has no services table.",
+    desc: "Internal service catalogue; public enquiry options remain unchanged.",
     cols: [],
     available: false,
   },
   "service-areas": {
     title: "Service Areas",
-    desc: "Service areas are currently static website content.",
+    desc: "Internal service-area catalogue; public coverage rules remain unchanged.",
     cols: [],
     available: false,
   },
@@ -267,45 +269,6 @@ async function loadModule(module: string): Promise<{ rows: ModuleRow[]; error: s
         error: "",
       };
     }
-    case "vehicles": {
-      const { data, error } = await supabase
-        .from("vehicles")
-        .select("id,make,model,year,passenger_capacity,luggage_capacity,status,created_at")
-        .order("created_at", { ascending: false });
-      return {
-        rows: (data ?? []).map((row) => ({
-          id: row.id,
-          values: [
-            `${row.make} ${row.model}`,
-            text(row.year),
-            text(row.passenger_capacity),
-            text(row.luggage_capacity),
-          ],
-          status: row.status,
-          created_at: row.created_at,
-        })),
-        error: error?.message ?? "",
-      };
-    }
-    case "vehicle-categories": {
-      const { data, error } = await supabase
-        .from("vehicle_categories")
-        .select("id,name,passenger_capacity,luggage_capacity,is_visible,updated_at,created_at")
-        .order("display_order");
-      return {
-        rows: (data ?? []).map((row) => ({
-          id: row.id,
-          values: [
-            row.name,
-            String(row.passenger_capacity),
-            String(row.luggage_capacity),
-            row.is_visible ? "Visible" : "Hidden",
-          ],
-          created_at: row.updated_at ?? row.created_at,
-        })),
-        error: error?.message ?? "",
-      };
-    }
     case "team": {
       const [profiles, roles] = await Promise.all([
         supabase
@@ -361,12 +324,16 @@ export const Route = createFileRoute("/_authenticated/admin/m/$module")({
   head: () => ({
     meta: [{ title: "Skyrun Operations Center" }, { name: "robots", content: "noindex" }],
   }),
+  beforeLoad: ({ params }) => {
+    if (params.module === "customer-history") throw redirect({ to: "/admin/customers" });
+  },
   component: ModulePage,
 });
 
 function ModulePage() {
   const navigate = useNavigate();
   const { module } = Route.useParams();
+  const special = ["services", "service-areas", "vehicles", "vehicle-categories"].includes(module);
   const core = [
     "contact-messages",
     "ride-enquiries",
@@ -387,7 +354,7 @@ function ModulePage() {
   const [loading, setLoading] = useState(current.available);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
-    if (!current.available) return;
+    if (!current.available || special) return;
     setLoading(true);
     setError("");
     try {
@@ -399,7 +366,7 @@ function ModulePage() {
     } finally {
       setLoading(false);
     }
-  }, [current.available, module]);
+  }, [current.available, module, special]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -416,6 +383,17 @@ function ModulePage() {
   );
   const safePage = Math.min(page, Math.max(0, Math.ceil(filtered.length / 50) - 1));
   const displayed = core ? filtered.slice(safePage * 50, safePage * 50 + 50) : rows;
+  if (module === "services" || module === "service-areas")
+    return (
+      <ServiceConfiguration
+        key={module}
+        kind={module === "services" ? "service" : "service_area"}
+      />
+    );
+  if (module === "vehicles" || module === "vehicle-categories")
+    return (
+      <FleetImages key={module} kind={module === "vehicles" ? "vehicle" : "vehicle_category"} />
+    );
   return (
     <AdminShell
       title={current.title}
