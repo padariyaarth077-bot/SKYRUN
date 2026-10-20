@@ -106,3 +106,14 @@ Logs: `phase6-database.log`, `phase6-browser.log`, `phase6-regression-*.log`, `p
 ## Approved hosted release — 21 October 2026
 
 Owner explicitly approved the single Phase 6 migration, GitHub publication, Worker deployment and read-only postflight. Target reverified through Management API GET. Read-only drift check found the migration absent and zero invalid legacy timestamps. Only `20261021120000_phase6_chat_inbox.sql` was executed through the authenticated Management API query endpoint, once, with its own transaction. All 11 read-only postflight assertions passed: view/RPC/indexes exist, RLS remains enabled, legacy visitor RPCs no longer allow anon/authenticated execution, staff RPC allows authenticated but not anon, capability hashes are not directly selectable and ordinary chat writes are denied. No operational RPC, customer test record, email or WhatsApp send occurred. Source publication and deployment are pending as of this entry; a later entry records actual outcome. Earlier local-only/no-production statements are historical boundaries before this explicit release approval.
+
+
+## Release completed — 21 October 2026
+
+Approved source commit `228b9fa` published to GitHub main. Worker `skyrun` successfully deployed using the existing cached Wrangler 4.136.2, preserving runtime variables/secrets (`--keep-vars`). Worker version: `ae94b8eb-5ff9-428b-9e1a-de1694da97de`. Live URL: https://skyrun.padariyaarth077.workers.dev .
+
+The initial deployment attempt using an older cached Wrangler uploaded assets but was rejected before Worker activation because generated compatibility date 2026-10-21 was ahead of Cloudflare's current UTC date. Retried successfully with the newer already-cached Wrangler and explicit `--compatibility-date 2026-10-20`. No software installation or secret change. No need to rerun the applied migration.
+
+Read-only live checks: authenticated Vehicles displays 0 actual saved vehicles, 13 catalogue groups and 14 reference photos; Cadillac filtering works and clears correctly. Authenticated Chat Conversations loads its honest empty state with no error. Public /catalogue and a supplied image return HTTP 200 and expected content. No visitor chat was opened, no staff mutation was performed, no production test fixtures were created and no real email/WhatsApp message was sent. The live workflow remains tested end-to-end only in the isolated environment; Phase 3 real delivery/acceptance remains LIVE UNVERIFIED. Screenshot: phase6-live-fleet.png. Separate postflight metadata evidence remains local in phase6-release-postflight.json.
+
+Production schema change: YES, only the explicitly approved Phase 6 migration. GitHub publication: YES. Worker deployment: YES. Reset/deletion/communications: NO. Existing unrelated CLI metadata and screenshots/exports remain outside this commit.

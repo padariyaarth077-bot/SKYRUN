@@ -1,3 +1,5 @@
+> Release update: after this read-only audit, the owner separately approved the Phase 6 migration/publication/deployment. Release completed successfully; see PHASE6-VERIFICATION.md. Statements below describe the preflight snapshot before that approval.
+
 # Phase 6 hosted compatibility preflight
 
 Inspected 2026-10-21T03:35:32.445033+05:30 (Asia/Calcutta). Target independently verified through Management API GET: `cudisqrugjupstgdeqac`.
