@@ -1,6 +1,6 @@
 # Phase 5 approved hosted release — 21 October 2026
 
-Status: hosted migration applied; application publication/deployment and fleet image browser verification pending at this revision.
+Status: **RELEASED. Hosted migration, source publication and Worker deployment succeeded. Live read-only fleet-gallery verification passed. Broader operational/live workflow testing remains deferred.**
 
 The owner explicitly approved read-only compatibility inspection and, if compatible, applying the Phase 5 migration, publishing reviewed source to GitHub and deploying Worker skyrun. No emails, booking/deposit operations or operational fixture creation are included.
 
@@ -17,3 +17,19 @@ Read-only postflight: catalogue RLS true; two nullable image columns present; tw
 Release checks: npm run build passed after the gallery-default change; npm run test -- src/test/phase5.test.tsx --maxWorkers=1 --pool=threads passed all 22 focused tests. Previous verified baseline remains 345 full unit/component tests, passing TypeScript/build, lint with nine existing warnings, 11 isolated Phase 5 scenarios and 45 earlier-phase isolated regression scenarios. No new database function change was made after isolated verification. See PHASE5-VERIFICATION.md for commands and limitations.
 
 Production write scope: approved schema/function/grant migration only. No emails, bookings, deposits, customer edits, vehicle records or configuration entries were created or changed operationally. No tests that create synthetic business records were run against production.
+
+## Completed publication, deployment and browser evidence
+
+Published source commit 3878993 to origin/main (padariyaarth077-bot/SKYRUN). Staged only the 31 Phase 5 source/report/image files; excluded .env, CLI metadata, prior exports and screenshots. Staged source and built public text scan passed for 79 text files without printing credential values. Supplied image copies remain unchanged.
+
+Executed:
+
+`node C:/Users/padar/AppData/Local/npm-cache/_npx/0367877225b26254/node_modules/wrangler/bin/wrangler.js deploy --config .output/server/wrangler.json --name skyrun --compatibility-date 2026-10-17 --keep-vars`
+
+Exit 0, 46 changed assets uploaded, Worker version **ae1fa17b-cde6-4197-98ba-f9611d3478ed**, origin https://skyrun.padariyaarth077.workers.dev. Existing variables/secrets preserved; none added or changed. No deployment to the auto-generated alternative Worker name.
+
+Visible signed-in Codex browser inspection of /admin/m/vehicles showed the deployed Vehicles heading, honest empty-record state and an open Available reference photos (14) gallery. Read-only DOM inspection confirmed all 14 image elements complete with naturalWidth greater than zero. Separate public HEAD checks confirmed 14/14 photo assets return HTTP 200 and image content types. The first asset-check helper found zero paths because it assumed quoted manifest property keys; corrected it to enumerate the actual photo directory, then obtained the complete 14/14 result. No image download or production record creation was used to obtain browser evidence.
+
+Local screenshot: phase5-live-fleet-gallery.png (not committed). Browser tab left on the Vehicles gallery for the owner. No fleet/category/customer/catalogue entries were created or edited to verify this release. With zero existing vehicles/categories, photo assignment persistence has only isolated-test evidence; no real fleet assignment was fabricated.
+
+Remaining limitations: full customer/configuration/photo-assignment live mutation QA remains deferred. Phase 3 real provider delivery/acceptance and Phase 4 live booking verification are still not cleared. No real emails, quote acceptances, booking/deposit operations, data deletion or migration-ledger repair occurred in this release.

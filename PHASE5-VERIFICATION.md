@@ -1,6 +1,6 @@
 ## Hosted release update — 21 October 2026
 
-The owner subsequently approved Phase 5 hosted compatibility review, migration, source publication and deployment. The targeted migration has now been applied after compatibility checks. See PHASE5-RELEASE.md for current release/deployment/browser results; the local-stage statements below describe that earlier isolated testing only.
+The owner subsequently approved Phase 5 hosted compatibility review, migration, source publication and deployment. The targeted migration has now been applied after compatibility checks, source commit 3878993 published, and Worker skyrun deployed as version ae1fa17b-cde6-4197-98ba-f9611d3478ed. Live read-only browser/asset checks confirmed all 14 fleet photos load. Broader manual/live operational testing remains deferred. See PHASE5-RELEASE.md for release evidence; the local-stage statements below describe that earlier isolated testing only.
 
 # Phase 5 — customers, internal configuration and fleet photos
 
