@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { usePolling } from "@/lib/use-polling";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Loader2, MessageCircle, RotateCw, Send, UserRound, X } from "lucide-react";
 import {
   loadChat,
@@ -10,6 +11,8 @@ import {
 import {
   CHAT_SESSION_KEY,
   fallbackReply,
+  mergeChatMessages,
+  chatPageHasGap,
   type ChatConversation,
   type ChatMessage,
 } from "@/lib/chat.shared";
@@ -45,54 +48,117 @@ export function ChatWidget() {
   const [attempt, setAttempt] = useState(0);
   const [offlineAnswer, setOfflineAnswer] = useState("");
   const end = useRef<HTMLDivElement>(null);
-  const refresh = async (knownSession: string) => {
-    const state = await loadChat({ data: { session: knownSession } });
-    setConversation(state.conversation);
-    setMessages(state.messages);
+  const busyRef = useRef(false),
+    refreshBusy = useRef(false),
+    initializing = useRef(false);
+  const sessionRef = useRef<string | undefined>(undefined);
+  const retry = useRef({ signature: "", id: "" });
+  const oldest = useRef<ChatMessage | null>(null);
+  const messageCache = useRef<ChatMessage[]>([]);
+  const [hasMore, setHasMore] = useState(false),
+    [historyBusy, setHistoryBusy] = useState(false),
+    [refreshError, setRefreshError] = useState("");
+  const refresh = useCallback(async (knownSession: string) => {
+    if (refreshBusy.current) return;
+    refreshBusy.current = true;
+    try {
+      const state = await loadChat({ data: { session: knownSession } });
+      if (sessionRef.current !== knownSession) return;
+      setConversation(state.conversation);
+      const gap = chatPageHasGap(messageCache.current, state.messages, state.has_more);
+      messageCache.current = mergeChatMessages(messageCache.current, state.messages);
+      setMessages(messageCache.current);
+      if (!oldest.current || gap) {
+        oldest.current = state.messages[0] ?? null;
+        setHasMore(state.has_more);
+      }
+      setRefreshError("");
+    } catch {
+      if (sessionRef.current === knownSession)
+        setRefreshError(
+          "Could not refresh chat. Saved messages and your draft are preserved. Try again.",
+        );
+    } finally {
+      refreshBusy.current = false;
+    }
+  }, []);
+  usePolling(
+    async () => {
+      if (session) await refresh(session);
+    },
+    open && Boolean(session) && !busy && !historyBusy,
+  );
+  const loadOlder = async () => {
+    if (!session || !oldest.current || historyBusy) return;
+    setHistoryBusy(true);
+    try {
+      const state = await loadChat({
+        data: { session, beforeId: oldest.current.id, beforeCreatedAt: oldest.current.created_at },
+      });
+      if (sessionRef.current !== session) return;
+      messageCache.current = mergeChatMessages(state.messages, messageCache.current);
+      setMessages(messageCache.current);
+      oldest.current = state.messages[0] ?? oldest.current;
+      setHasMore(state.has_more);
+      setRefreshError("");
+    } catch {
+      setRefreshError("Could not load earlier messages. Try again.");
+    } finally {
+      setHistoryBusy(false);
+    }
   };
 
   useEffect(() => {
-    if (!open || session) return;
+    if (!open || session || initializing.current) return;
+    initializing.current = true;
     const initialize = async () => {
       setBusy(true);
       try {
         const started = await startChat({ data: { session: storedSession() } });
         saveSession(started.session);
+        sessionRef.current = started.session;
         setSession(started.session);
         await refresh(started.session);
         setError("");
       } catch {
         setError("Chat is temporarily unavailable. Please call or email the Skyrun team.");
       } finally {
+        initializing.current = false;
         setBusy(false);
       }
     };
     void initialize();
-  }, [open, session, attempt]);
+  }, [open, session, attempt, refresh]);
+  const lastMessageId = messages.at(-1)?.id;
   useEffect(() => {
     end.current?.scrollIntoView({ block: "end" });
-  }, [messages, open]);
+  }, [lastMessageId, open]);
 
   const send = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!session || !input.trim() || busy) return;
+    if (!session || !input.trim() || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setError("");
     setNotice("");
     try {
-      await sendChatMessage({ data: { session, message: input } });
+      const signature = JSON.stringify([session, input.trim()]);
+      if (retry.current.signature !== signature)
+        retry.current = { signature, id: crypto.randomUUID() };
+      await sendChatMessage({ data: { session, message: input, operationId: retry.current.id } });
+      retry.current = { signature: "", id: "" };
       setInput("");
       await refresh(session);
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Your message was not sent. Please try again.",
-      );
+      setError("Your message could not be confirmed. Your draft is preserved; retry safely.");
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   };
   const handoff = async () => {
-    if (!session || busy) return;
+    if (!session || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setError("");
     setNotice("");
@@ -102,12 +168,14 @@ export function ChatWidget() {
     } catch {
       setError("We could not request human support. Please call or email the Skyrun team.");
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   };
   const submitContact = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!session || busy) return;
+    if (!session || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setError("");
     setNotice("");
@@ -123,6 +191,7 @@ export function ChatWidget() {
     } catch {
       setError("We could not save your contact details. Please check them and try again.");
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   };
@@ -226,6 +295,28 @@ export function ChatWidget() {
           ) : (
             <>
               <div className="flex-1 space-y-2 overflow-y-auto p-3 text-sm" aria-live="polite">
+                {hasMore && (
+                  <button
+                    disabled={historyBusy}
+                    onClick={() => void loadOlder()}
+                    className="underline text-xs"
+                  >
+                    {historyBusy ? "Loading earlier messages…" : "Load earlier messages"}
+                  </button>
+                )}
+                {refreshError && (
+                  <p role="alert" className="text-xs text-destructive">
+                    {refreshError}{" "}
+                    <button
+                      className="underline"
+                      onClick={() => {
+                        if (session) void refresh(session);
+                      }}
+                    >
+                      Refresh chat
+                    </button>
+                  </p>
+                )}
                 {busy && !messages.length && (
                   <p className="text-muted-foreground">Opening your secure chat…</p>
                 )}
@@ -254,6 +345,34 @@ export function ChatWidget() {
                   >
                     {error}
                   </p>
+                )}
+                {(status === "RESOLVED" || status === "CLOSED") && (
+                  <div className="rounded border p-2 text-xs">
+                    <p>This conversation is closed. Its saved history is still available.</p>
+                    <button
+                      className="underline"
+                      onClick={() => {
+                        try {
+                          window.localStorage.removeItem(CHAT_SESSION_KEY);
+                        } catch {
+                          /* Keep the new session in memory if storage is blocked. */
+                        }
+                        oldest.current = null;
+                        messageCache.current = [];
+                        sessionRef.current = undefined;
+                        retry.current = { signature: "", id: "" };
+                        setSession(undefined);
+                        setConversation(undefined);
+                        setMessages([]);
+                        setInput("");
+                        setError("");
+                        setRefreshError("");
+                        setHasMore(false);
+                      }}
+                    >
+                      Start a new chat
+                    </button>
+                  </div>
                 )}
                 {notice && (
                   <p className="rounded-md bg-success/10 p-2 text-xs text-success">{notice}</p>
@@ -326,7 +445,13 @@ export function ChatWidget() {
                     />
                     <button
                       aria-label="Send message"
-                      disabled={!session || busy || !input.trim()}
+                      disabled={
+                        !session ||
+                        busy ||
+                        !input.trim() ||
+                        status === "RESOLVED" ||
+                        status === "CLOSED"
+                      }
                       className="rounded bg-primary px-3 text-primary-foreground disabled:opacity-50"
                     >
                       {busy ? (

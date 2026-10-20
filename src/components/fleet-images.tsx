@@ -1,10 +1,13 @@
+import { CarFront, Images, Layers3, Search, RefreshCw, ShieldCheck } from "lucide-react";
+import { CatalogueShare } from "@/components/catalogue-share";
+import { VehicleCatalogue } from "@/components/vehicle-catalogue";
 import { useCallback, useEffect, useState } from "react";
 import { AdminShell, Panel } from "@/components/admin-shell";
 import { AdminPagination } from "@/components/admin-pagination";
 import { useOperationsPermission, useOperationsSave } from "@/lib/operations-hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { readAll } from "@/lib/admin-data";
-import { VEHICLE_IMAGES, knownVehicleImage } from "@/lib/vehicle-images";
+import { VEHICLE_IMAGES, VEHICLE_MODELS, knownVehicleImage } from "@/lib/vehicle-images";
 
 type FleetRecord = {
   id: string;
@@ -157,26 +160,73 @@ export function FleetImages({ kind }: { kind: "vehicle" | "vehicle_category" }) 
       title={kind === "vehicle" ? "Vehicles" : "Vehicle Categories"}
       subtitle="Saved fleet records and your vehicle reference photos"
       actions={
-        <button disabled={loading} onClick={() => void load()} className="rounded border p-2">
+        <button
+          disabled={loading}
+          onClick={() => void load()}
+          className="inline-flex items-center gap-2 rounded-xl border bg-card px-4 py-2.5 text-sm font-medium shadow-sm transition hover:bg-accent disabled:opacity-50"
+        >
+          <RefreshCw aria-hidden="true" className={`size-4 ${loading ? "animate-spin" : ""}`} />{" "}
           Refresh
         </button>
       }
     >
-      <p className="mb-4">
-        Choose the matching photo explicitly. Photos do not establish ownership, availability or
-        passenger capacity, and do not change the public website.
-      </p>
-      <label className="mb-4 block">
-        Search fleet
-        <input
-          className="ml-2 rounded border p-2"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-        />
-      </label>
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        {[
+          {
+            label: kind === "vehicle" ? "Saved vehicles" : "Saved categories",
+            value: loading || error ? "—" : rows.length,
+            icon: CarFront,
+            color: "bg-blue-100 text-blue-600",
+          },
+          {
+            label: "Catalogue models / groups",
+            value: VEHICLE_MODELS.length,
+            icon: Layers3,
+            color: "bg-violet-100 text-violet-600",
+          },
+          {
+            label: "Reference photos",
+            value: VEHICLE_IMAGES.length,
+            icon: Images,
+            color: "bg-emerald-100 text-emerald-600",
+          },
+        ].map(({ label, value, icon: Icon, color }) => (
+          <div
+            key={label}
+            className="flex items-center gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-sm"
+          >
+            <div className={`rounded-xl p-3 ${color}`}>
+              <Icon aria-hidden="true" className="size-6" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{label}</p>
+              <p className="mt-1 text-2xl font-bold tracking-tight">{value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+        <label className="relative block sm:w-80">
+          <span className="sr-only">Search fleet</span>
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground"
+          />
+          <input
+            placeholder="Search vehicles or models…"
+            className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+          />
+        </label>
+        <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+          <ShieldCheck aria-hidden="true" className="size-4 text-emerald-600" /> Reference catalogue
+          · availability checked separately
+        </span>
+      </div>
       {loading ? (
         <p role="status">Loading fleet…</p>
       ) : error ? (
@@ -198,29 +248,38 @@ export function FleetImages({ kind }: { kind: "vehicle" | "vehicle_category" }) 
             ))}
           </div>
           {!filtered.length && (
-            <p>
-              No saved fleet records match this search. Images do not create vehicles automatically.
-            </p>
+            <div className="flex items-center gap-4 rounded-2xl border border-dashed border-border bg-card/60 p-5">
+              <div className="rounded-xl bg-blue-100 p-3 text-blue-600">
+                <CarFront aria-hidden="true" className="size-5" />
+              </div>
+              <div>
+                <h2 className="font-semibold">
+                  {search ? "No saved records match" : "Your model catalogue is ready"}
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {search
+                    ? "Try another model name or clear your search."
+                    : "Browse the photos below. Individual vehicle quantities and capacities can be recorded when confirmed."}
+                </p>
+              </div>
+            </div>
           )}
-          <AdminPagination page={safePage} total={filtered.length} onChange={setPage} />
+          {filtered.length > 50 && (
+            <AdminPagination page={safePage} total={filtered.length} onChange={setPage} />
+          )}
         </>
       )}
-      <details open className="mt-6 rounded border p-4">
-        <summary>Available reference photos ({VEHICLE_IMAGES.length})</summary>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          {VEHICLE_IMAGES.map((image) => (
-            <figure key={image.path}>
-              <img
-                src={image.path}
-                alt={image.label}
-                loading="lazy"
-                className="h-32 w-full object-contain"
-              />
-              <figcaption>{image.label}</figcaption>
-            </figure>
-          ))}
-        </div>
-      </details>
+      <div className="mt-6 rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
+        <h2 className="mb-3 font-semibold">Share your catalogue</h2>
+        <CatalogueShare />
+      </div>
+      <section className="mt-8">
+        <h2 className="mb-2 flex items-center gap-2 text-xl font-semibold tracking-tight">
+          <Images aria-hidden="true" className="size-5 text-violet-600" />
+          Fleet model catalogue ({VEHICLE_MODELS.length} models / groups)
+        </h2>
+        <VehicleCatalogue search={search} internal />
+      </section>
     </AdminShell>
   );
 }

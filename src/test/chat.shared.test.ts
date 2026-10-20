@@ -4,16 +4,44 @@ import {
   chatContactSchema,
   chatMessageSchema,
   fallbackReply,
+  chatPageHasGap,
+  mergeChatMessages,
 } from "@/lib/chat.shared";
 
 const session = "A".repeat(43);
 
+it("retains distinct messages and exposes an offline gap instead of silently skipping history", () => {
+  const first = {
+    id: "first",
+    sender_type: "CUSTOMER" as const,
+    message: "First",
+    created_at: "2026-10-21T10:00:00Z",
+  };
+  const latest = { ...first, id: "latest", message: "Latest", created_at: "2026-10-21T12:00:00Z" };
+  expect(chatPageHasGap([first], [latest], true)).toBe(true);
+  expect(chatPageHasGap([first], [first, latest], true)).toBe(false);
+  expect(chatPageHasGap([], [latest], true)).toBe(false);
+  expect(mergeChatMessages([latest, first], [latest]).map((message) => message.id)).toEqual([
+    "first",
+    "latest",
+  ]);
+});
+
 describe("chat input boundaries", () => {
   it("accepts a bounded visitor message and rejects an oversized one", () => {
-    expect(chatMessageSchema.safeParse({ session, message: "Airport pickup" }).success).toBe(true);
     expect(
-      chatMessageSchema.safeParse({ session, message: "x".repeat(CHAT_MAX_MESSAGE_LENGTH + 1) })
-        .success,
+      chatMessageSchema.safeParse({
+        session,
+        operationId: "11111111-1111-4111-8111-111111111111",
+        message: "Airport pickup",
+      }).success,
+    ).toBe(true);
+    expect(
+      chatMessageSchema.safeParse({
+        session,
+        operationId: "11111111-1111-4111-8111-111111111111",
+        message: "x".repeat(CHAT_MAX_MESSAGE_LENGTH + 1),
+      }).success,
     ).toBe(false);
   });
 

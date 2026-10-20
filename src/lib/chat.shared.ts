@@ -6,8 +6,20 @@ export const CHAT_MAX_MESSAGE_LENGTH = 1500;
 
 export const chatMessageSchema = z.object({
   session: z.string().regex(/^[A-Za-z0-9_-]{43,128}$/),
+  operationId: z.string().uuid(),
   message: z.string().trim().min(1).max(CHAT_MAX_MESSAGE_LENGTH),
 });
+
+export const chatPageInput = z
+  .object({
+    session: z.string().regex(/^[A-Za-z0-9_-]{43,128}$/),
+    beforeCreatedAt: z.string().datetime({ offset: true }).nullable().optional(),
+    beforeId: z.string().uuid().nullable().optional(),
+  })
+  .refine(
+    (value) => Boolean(value.beforeId) === Boolean(value.beforeCreatedAt),
+    "Invalid message cursor",
+  );
 
 export const chatContactSchema = z.object({
   session: z.string().regex(/^[A-Za-z0-9_-]{43,128}$/),
@@ -48,6 +60,25 @@ export type ChatConversation = {
   updated_at: string;
 };
 
+export type ChatPage = {
+  conversation: ChatConversation;
+  messages: ChatMessage[];
+  has_more: boolean;
+  last_customer_message_id?: string | null;
+  can_handle?: boolean;
+};
+export function mergeChatMessages(...pages: ChatMessage[][]) {
+  return [...new Map(pages.flat().map((message) => [message.id, message])).values()].sort(
+    (a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id),
+  );
+}
+
+export function chatPageHasGap(previous: ChatMessage[], incoming: ChatMessage[], hasMore: boolean) {
+  if (!hasMore || !previous.length || !incoming.length) return false;
+  const ids = new Set(previous.map((message) => message.id));
+  return !incoming.some((message) => ids.has(message.id));
+}
+
 export function fallbackReply(message: string): string {
   const text = message.toLowerCase();
   if (/(price|cost|fare|quote|discount)/.test(text)) {
@@ -57,7 +88,7 @@ export function fallbackReply(message: string): string {
     return "I can help collect an enquiry, but a ride is confirmed only after the Skyrun team reviews the details and responds.";
   }
   if (/(fleet|vehicle|suv|sedan|expedition|e350|glc)/.test(text)) {
-    return "Skyrun currently presents luxury SUVs and sedans, including a Ford Expedition, Mercedes-Benz E350, and Mercedes-Benz GLC 300. Vehicle suitability is confirmed after the team reviews your trip.";
+    return "Our vehicle catalogue shows the models offered by Skyrun. Exact vehicle, passenger and luggage capacity, and availability are confirmed by the team for your trip.";
   }
   if (/(airport|ohare|o'hare|midway)/.test(text)) {
     return "Skyrun can help with airport transportation. Please share your pickup, destination, date, time, passenger count, and luggage needs so the team can review your request.";

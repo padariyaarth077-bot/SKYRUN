@@ -169,6 +169,7 @@ export type Database = {
           assigned_to: string | null;
           handoff_requested_at: string | null;
           visitor_last_read_at: string | null;
+          staff_read_message_id: string | null;
           started_at: string;
           ended_at: string | null;
           created_at: string;
@@ -192,6 +193,7 @@ export type Database = {
         ]
       >;
       conversation_messages: Row<{
+        client_operation_id: string | null;
         id: string;
         conversation_id: string;
         sender_type: string;
@@ -308,8 +310,69 @@ export type Database = {
         created_at: string;
       }>;
     };
-    Views: { [_ in never]: never };
+    Views: {
+      chat_inbox: {
+        Row: {
+          id: string;
+          business_unit_id: string;
+          status: string;
+          assigned_to: string | null;
+          handoff_requested_at: string | null;
+          updated_at: string;
+          lead_id: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_email: string | null;
+          customer_phone: string | null;
+          lead_number: string | null;
+          last_customer_message_id: string | null;
+          unread: boolean;
+          can_handle: boolean;
+        };
+        Relationships: [];
+      };
+    };
     Functions: {
+      chat_load_page: {
+        Args: {
+          _session_token_hash: string;
+          _before_created_at: string | null;
+          _before_id: string | null;
+        };
+        Returns: Json;
+      };
+      chat_staff_load: {
+        Args: {
+          _conversation_id: string;
+          _before_created_at: string | null;
+          _before_id: string | null;
+        };
+        Returns: Json;
+      };
+      chat_send_message: {
+        Args: {
+          _session_token_hash: string;
+          _operation_id: string;
+          _message: string;
+          _reply: string;
+        };
+        Returns: Json;
+      };
+      can_handle_chat: { Args: { _business_unit_id: string }; Returns: boolean };
+      chat_mark_read: {
+        Args: { _conversation_id: string; _last_customer_message_id: string };
+        Returns: boolean;
+      };
+      chat_staff_action: {
+        Args: {
+          _conversation_id: string;
+          _operation_id: string;
+          _action: string;
+          _message: string;
+        };
+        Returns: string;
+      };
+
       can_manage_operations: { Args: { _business_unit_id: string }; Returns: boolean };
       phase5_save: {
         Args: {

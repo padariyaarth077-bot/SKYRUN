@@ -60,3 +60,16 @@ export const VEHICLE_IMAGES = [
 export function knownVehicleImage(path: string | null) {
   return VEHICLE_IMAGES.some((image) => image.path === path) ? path : null;
 }
+
+// Photo numbers identify alternate views, never a count of owned cars.
+const modelNames: Record<string, string> = {
+  "Cadillac Escalade ESV 1": "Cadillac Escalade ESV",
+  "Cadillac Escalade ESV 2": "Cadillac Escalade ESV",
+  "chevrolet suburban": "Chevrolet Suburban",
+};
+const modelPhotos = new Map<string, (typeof VEHICLE_IMAGES)[number][]>();
+for (const image of VEHICLE_IMAGES) {
+  const name = modelNames[image.label] ?? image.label;
+  modelPhotos.set(name, [...(modelPhotos.get(name) ?? []), image]);
+}
+export const VEHICLE_MODELS = [...modelPhotos].map(([name, photos]) => ({ name, photos }));

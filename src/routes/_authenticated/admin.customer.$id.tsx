@@ -1,3 +1,4 @@
+import { CatalogueShare } from "@/components/catalogue-share";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -151,6 +152,11 @@ function CustomerDetail() {
                   {customer.phone}
                 </a>
               )}
+            </div>
+          </Panel>
+          <Panel title="Share catalogue">
+            <div className="p-4">
+              <CatalogueShare phone={customer.phone} />
             </div>
           </Panel>
           <Panel title="Edit contact details">

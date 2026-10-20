@@ -5,9 +5,9 @@ import {
   CHAT_BUSINESS_UNIT_ID,
   chatContactSchema,
   chatMessageSchema,
+  chatPageInput,
   fallbackReply,
-  type ChatConversation,
-  type ChatMessage,
+  type ChatPage,
 } from "@/lib/chat.shared";
 
 function hashSession(session: string) {
@@ -44,14 +44,16 @@ export const startChat = createServerFn({ method: "POST" })
   });
 
 export const loadChat = createServerFn({ method: "POST" })
-  .validator(z.object({ session: z.string().regex(/^[A-Za-z0-9_-]{43,128}$/) }).parse)
+  .validator(chatPageInput.parse)
   .handler(async ({ data }) => {
     const client = await admin();
-    const { data: result, error } = await client.rpc("chat_load_conversation", {
+    const { data: result, error } = await client.rpc("chat_load_page", {
       _session_token_hash: hashSession(data.session),
+      _before_created_at: data.beforeCreatedAt ?? null,
+      _before_id: data.beforeId ?? null,
     });
     if (error || !result) throw new Error("This chat session is no longer available.");
-    return result as { conversation: ChatConversation; messages: ChatMessage[] };
+    return result as ChatPage;
   });
 
 export const sendChatMessage = createServerFn({ method: "POST" })
@@ -59,22 +61,20 @@ export const sendChatMessage = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const client = await admin();
     const sessionHash = hashSession(data.session);
-    const { data: result, error } = await client.rpc("chat_append_visitor_message", {
+    const { data: result, error } = await client.rpc("chat_send_message", {
       _session_token_hash: sessionHash,
+      _operation_id: data.operationId,
       _message: data.message,
+      _reply: fallbackReply(data.message),
     });
     if (error || !result) throw databaseError();
 
-    const state = result as { conversation_id: string; status: string; message_id: string };
-    if (state.status !== "AI_HANDLING" && state.status !== "OPEN") return { ...state, reply: null };
-
-    const reply = fallbackReply(data.message);
-    const { error: replyError } = await client.rpc("chat_append_bot_message", {
-      _session_token_hash: sessionHash,
-      _message: reply,
-    });
-    if (replyError) throw databaseError();
-    return { ...state, reply };
+    return result as {
+      conversation_id: string;
+      status: string;
+      message_id: string;
+      reply: string | null;
+    };
   });
 
 export const requestChatHandoff = createServerFn({ method: "POST" })

@@ -16,6 +16,7 @@ import { Route as AirportRouteImport } from './routes/airport'
 import { Route as AirportTransferRouteImport } from './routes/airport-transfer'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as CatalogueRouteImport } from './routes/catalogue'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CorporateRouteImport } from './routes/corporate'
 import { Route as CorporateTransportationRouteImport } from './routes/corporate-transportation'
@@ -77,6 +78,11 @@ const AuthRoute = AuthRouteImport.update({
 const BookRoute = BookRouteImport.update({
   id: '/book',
   path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogueRoute = CatalogueRouteImport.update({
+  id: '/catalogue',
+  path: '/catalogue',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/airport-transfer': typeof AirportTransferRoute
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
+  '/catalogue': typeof CatalogueRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
   '/corporate-transportation': typeof CorporateTransportationRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/airport-transfer': typeof AirportTransferRoute
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
+  '/catalogue': typeof CatalogueRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
   '/corporate-transportation': typeof CorporateTransportationRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/airport-transfer': typeof AirportTransferRoute
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
+  '/catalogue': typeof CatalogueRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
   '/corporate-transportation': typeof CorporateTransportationRoute
@@ -351,6 +360,7 @@ export interface FileRouteTypes {
     | '/airport-transfer'
     | '/auth'
     | '/book'
+    | '/catalogue'
     | '/contact'
     | '/corporate'
     | '/corporate-transportation'
@@ -387,6 +397,7 @@ export interface FileRouteTypes {
     | '/airport-transfer'
     | '/auth'
     | '/book'
+    | '/catalogue'
     | '/contact'
     | '/corporate'
     | '/corporate-transportation'
@@ -423,6 +434,7 @@ export interface FileRouteTypes {
     | '/airport-transfer'
     | '/auth'
     | '/book'
+    | '/catalogue'
     | '/contact'
     | '/corporate'
     | '/corporate-transportation'
@@ -461,6 +473,7 @@ export interface RootRouteChildren {
   AirportTransferRoute: typeof AirportTransferRoute
   AuthRoute: typeof AuthRoute
   BookRoute: typeof BookRoute
+  CatalogueRoute: typeof CatalogueRoute
   ContactRoute: typeof ContactRoute
   CorporateRoute: typeof CorporateRoute
   CorporateTransportationRoute: typeof CorporateTransportationRoute
@@ -527,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/book'
       fullPath: '/book'
       preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalogue': {
+      id: '/catalogue'
+      path: '/catalogue'
+      fullPath: '/catalogue'
+      preLoaderRoute: typeof CatalogueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -785,6 +805,7 @@ const rootRouteChildren: RootRouteChildren = {
   AirportTransferRoute: AirportTransferRoute,
   AuthRoute: AuthRoute,
   BookRoute: BookRoute,
+  CatalogueRoute: CatalogueRoute,
   ContactRoute: ContactRoute,
   CorporateRoute: CorporateRoute,
   CorporateTransportationRoute: CorporateTransportationRoute,

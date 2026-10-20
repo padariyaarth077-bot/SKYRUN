@@ -9,7 +9,7 @@ import {
   possibleDuplicates,
   type Customer,
 } from "@/lib/phase5";
-import { VEHICLE_IMAGES, knownVehicleImage } from "@/lib/vehicle-images";
+import { VEHICLE_IMAGES, VEHICLE_MODELS, knownVehicleImage } from "@/lib/vehicle-images";
 import { existsSync } from "node:fs";
 import type { ReactNode } from "react";
 const { rpc, from } = vi.hoisted(() => ({ rpc: vi.fn(), from: vi.fn() }));
@@ -67,6 +67,16 @@ beforeEach(() => {
   }));
 });
 afterEach(cleanup);
+it("groups alternate model photos without inventing car quantities or capacities", () => {
+  expect(VEHICLE_MODELS).toHaveLength(13);
+  expect(
+    VEHICLE_MODELS.find((model) => model.name === "Cadillac Escalade ESV")?.photos,
+  ).toHaveLength(2);
+  expect(VEHICLE_MODELS.flatMap((model) => model.photos)).toHaveLength(14);
+  expect(
+    VEHICLE_MODELS.every((model) => !("quantity" in model) && !("passenger_capacity" in model)),
+  ).toBe(true);
+});
 it.each([
   { ...valid, full_name: " " },
   { ...valid, email: "not-email" },
@@ -265,7 +275,8 @@ it("displays existing fleet records and requires an explicit image choice", asyn
     }),
   }));
   render(<FleetImages kind="vehicle" />);
-  await screen.findByText("Cadillac Escalade ESV");
+  await screen.findAllByText("Cadillac Escalade ESV");
+  expect(screen.getByText("Fleet model catalogue (13 models / groups)")).toBeInTheDocument();
   const picker = await screen.findByLabelText("Reference photo");
   expect(picker).toHaveValue("");
   expect(screen.getByRole("button", { name: "Save reference photo" })).toBeDisabled();
