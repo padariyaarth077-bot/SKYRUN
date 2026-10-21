@@ -1,3 +1,5 @@
+import { Reports } from "@/components/reports";
+import { FinanceList } from "@/components/finance-documents";
 import { ServiceConfiguration } from "@/components/service-configuration";
 import { FleetImages } from "@/components/fleet-images";
 import { AdminPagination } from "@/components/admin-pagination";
@@ -95,13 +97,13 @@ const MODULES: Record<string, Module> = {
   },
   drivers: {
     title: "Drivers",
-    desc: "The approved schema has no drivers table.",
+    desc: "Driver management is planned with dispatch. No driver assignments are recorded here.",
     cols: [],
     available: false,
   },
   availability: {
     title: "Availability",
-    desc: "The approved schema has no availability table.",
+    desc: "Vehicle availability scheduling is not enabled yet. Catalogue photos do not establish availability.",
     cols: [],
     available: false,
   },
@@ -131,7 +133,7 @@ const MODULES: Record<string, Module> = {
   },
   notifications: {
     title: "Notifications",
-    desc: "No notification persistence has been implemented yet.",
+    desc: "Notification history and automated alerts are planned for Phase 8.",
     cols: [],
     available: false,
   },
@@ -321,6 +323,8 @@ async function loadModule(module: string): Promise<{ rows: ModuleRow[]; error: s
 }
 
 export const Route = createFileRoute("/_authenticated/admin/m/$module")({
+  validateSearch: (s: Record<string, unknown>): { q?: string } =>
+    typeof s["q"] === "string" ? { q: s["q"].slice(0, 120) } : {},
   head: () => ({
     meta: [{ title: "Skyrun Operations Center" }, { name: "robots", content: "noindex" }],
   }),
@@ -333,7 +337,17 @@ export const Route = createFileRoute("/_authenticated/admin/m/$module")({
 function ModulePage() {
   const navigate = useNavigate();
   const { module } = Route.useParams();
-  const special = ["services", "service-areas", "vehicles", "vehicle-categories"].includes(module);
+  const { q: contextQuery = "" } = Route.useSearch();
+  const special = [
+    "services",
+    "service-areas",
+    "vehicles",
+    "vehicle-categories",
+    "analytics",
+    "audit-log",
+    "invoices",
+    "receipts",
+  ].includes(module);
   const core = [
     "contact-messages",
     "ride-enquiries",
@@ -383,6 +397,10 @@ function ModulePage() {
   );
   const safePage = Math.min(page, Math.max(0, Math.ceil(filtered.length / 50) - 1));
   const displayed = core ? filtered.slice(safePage * 50, safePage * 50 + 50) : rows;
+  if (module === "analytics") return <Reports key="reports" initialSearch={contextQuery} />;
+  if (module === "audit-log") return <Reports key="audit" initialKind="audit" auditOnly />;
+  if (module === "invoices" || module === "receipts")
+    return <FinanceList kind={module} search={contextQuery} />;
   if (module === "services" || module === "service-areas")
     return (
       <ServiceConfiguration
@@ -457,7 +475,7 @@ function ModulePage() {
       <Panel>
         {!current.available ? (
           <div className="px-6 py-14 text-center">
-            <h2 className="text-base font-semibold">This section needs a data model first</h2>
+            <h2 className="text-base font-semibold">This workflow is not enabled yet</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">{current.desc}</p>
             <Link
               to="/admin/leads"
@@ -502,7 +520,9 @@ function ModulePage() {
                       colSpan={current.cols.length}
                       className="p-8 text-center text-muted-foreground"
                     >
-                      No records yet.
+                      {q || status
+                        ? "No records match these filters."
+                        : "No records have been recorded for this workflow yet."}
                     </td>
                   </tr>
                 )}

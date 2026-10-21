@@ -11,6 +11,33 @@ export type Database = {
   __InternalSupabase: { PostgrestVersion: "14.18" };
   public: {
     Tables: {
+      document_profiles: Row<{
+        business_unit_id: string;
+        legal_name: string;
+        address: string;
+        phone: string;
+        email: string;
+        website: string;
+        footer: string;
+        payment_terms: string;
+        updated_at: string;
+        updated_by: string;
+      }>;
+      invoice_drafts: Row<{
+        id: string;
+        business_unit_id: string;
+        booking_id: string;
+        customer_id: string;
+        amount: number;
+        currency: string;
+        customer_snapshot: Json;
+        business_snapshot: Json;
+        description: string;
+        created_by: string;
+        created_at: string;
+        updated_at: string;
+      }>;
+
       service_configuration: Row<{
         id: string;
         business_unit_id: string;
@@ -333,6 +360,31 @@ export type Database = {
       };
     };
     Functions: {
+      phase7_save: {
+        Args: {
+          _operation_id: string;
+          _kind: string;
+          _entity_id: string;
+          _payload: Json;
+          _expected_updated_at: string | null;
+        };
+        Returns: string;
+      };
+      phase7_report: {
+        Args: {
+          _kind: string;
+          _from: string | null;
+          _to: string | null;
+          _status: string;
+          _source: string;
+          _search: string;
+          _unit: string | null;
+          _offset: number;
+          _limit: number;
+        };
+        Returns: Json;
+      };
+
       chat_load_page: {
         Args: {
           _session_token_hash: string;

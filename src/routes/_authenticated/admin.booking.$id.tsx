@@ -114,6 +114,26 @@ function BookingDetail() {
               </p>
             </div>
           </Panel>
+          <Panel title="Financial documents">
+            <div className="flex flex-wrap gap-4 p-5">
+              <a
+                className="text-primary underline"
+                href={`/admin/document/invoice/new?bookingId=${booking.id}`}
+              >
+                Prepare or review invoice draft
+              </a>
+              <a
+                className="text-primary underline"
+                href={`/admin/m/receipts?q=${encodeURIComponent(booking.id)}`}
+              >
+                Verified payment previews
+              </a>
+              <p className="text-sm text-muted-foreground">
+                Drafts and previews are not issued financial documents. Use the booking reference in
+                Reports to filter related evidence.
+              </p>
+            </div>
+          </Panel>
           <Panel title="Deposit and booking operations">
             <BookingDeposits booking={booking} onSaved={load} />
           </Panel>

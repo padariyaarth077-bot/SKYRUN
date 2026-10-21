@@ -32,6 +32,7 @@ function QuoteDetail() {
     navigate = useNavigate();
   const draftId = useRef(crypto.randomUUID()),
     busy = useRef(false);
+  const [linkedBooking, setLinkedBooking] = useState<string | null>(null);
   const [quote, setQuote] = useState<Quote | null>(null),
     [ride, setRide] = useState<Ride | null>(null),
     [customer, setCustomer] = useState<{
@@ -51,6 +52,7 @@ function QuoteDetail() {
     setLoading(true);
     setLoadError(false);
     setQuote(null);
+    setLinkedBooking(null);
     setDeliveryLocked(false);
     setRide(null);
     setCustomer(null);
@@ -89,6 +91,16 @@ function QuoteDetail() {
         setGenuine(l.data?.status === "GENUINE");
       }
       if (q) {
+        if (q.status === "ACCEPTED") {
+          const linked = await supabase
+            .from("bookings")
+            .select("id")
+            .eq("quote_id", q.id)
+            .eq("business_unit_id", q.business_unit_id)
+            .maybeSingle();
+          if (linked.error) throw Error();
+          setLinkedBooking(linked.data?.id ?? null);
+        }
         setForm({
           amount: q.amount.toFixed(2),
           currency: q.currency,
@@ -239,6 +251,16 @@ function QuoteDetail() {
               <p className="whitespace-pre-wrap">{ride.notes}</p>
             </div>
           </Panel>
+          {linkedBooking && (
+            <Panel title="Accepted booking">
+              <a
+                className="block p-5 text-primary underline"
+                href={"/admin/booking/" + linkedBooking}
+              >
+                View booking, deposits and financial drafts
+              </a>
+            </Panel>
+          )}
           <Panel title="Quote">
             <div className="p-4">
               {!eligible && (

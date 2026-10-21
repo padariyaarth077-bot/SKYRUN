@@ -43,6 +43,18 @@ export const LEAD_STATUSES = [
 ] as const;
 
 const STATUS_STYLES: Record<string, string> = {
+  PENDING: "bg-amber-50 text-amber-800 ring-amber-200",
+  CONFIRMED: "bg-blue-50 text-blue-700 ring-blue-200",
+  COMPLETED: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  CANCELLED: "bg-rose-50 text-rose-700 ring-rose-200",
+  ACCEPTED: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  SENT: "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  DRAFT: "bg-slate-100 text-slate-700 ring-slate-200",
+  EXPIRED: "bg-slate-100 text-slate-700 ring-slate-200",
+  DECLINED: "bg-rose-50 text-rose-700 ring-rose-200",
+  VERIFIED: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  UNVERIFIED: "bg-amber-50 text-amber-800 ring-amber-200",
+  REVERSED: "bg-rose-50 text-rose-700 ring-rose-200",
   NEW: "bg-info/12 text-info ring-info/25",
   REVIEWING: "bg-warning/15 text-foreground ring-warning/40",
   GENUINE: "bg-success/12 text-success ring-success/30",
@@ -58,7 +70,7 @@ export function StatusBadge({ status }: { status: string }) {
       className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ${STATUS_STYLES[status] ?? "bg-muted ring-border"}`}
     >
       <span className="size-1.5 rounded-full bg-current" />
-      {status.charAt(0) + status.slice(1).toLowerCase()}
+      {status.charAt(0) + status.slice(1).toLowerCase().replaceAll("_", " ")}
     </span>
   );
 }
@@ -113,17 +125,16 @@ const NAV: { section: string; items: NavItem[] }[] = [
   },
   {
     section: "Customers",
-    items: [
-      { label: "Customers", icon: Users, to: "/admin/customers" },
-      m("Customer History", History, "customer-history"),
-    ],
+    items: [{ label: "Customers", icon: Users, to: "/admin/customers" }],
   },
   {
     section: "Business",
     items: [
       m("Services", Briefcase, "services"),
       m("Service Areas", MapPin, "service-areas"),
-      m("Analytics", BarChart3, "analytics"),
+      m("Reports", BarChart3, "analytics"),
+      m("Invoice Drafts", FileText, "invoices"),
+      m("Payment Previews", ScrollText, "receipts"),
     ],
   },
   {
@@ -175,7 +186,11 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   onClick={onNavigate}
                   className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13.5px] transition-colors ${active ? "bg-primary text-primary-foreground" : "text-adm-side-fg/80 hover:bg-adm-side-fg/10 hover:text-adm-side-fg"}`}
                 >
-                  <Icon className="size-4 shrink-0" />
+                  <span
+                    className={`rounded-lg p-1.5 ${active ? "bg-white/15" : "bg-adm-side-fg/5"}`}
+                  >
+                    <Icon aria-hidden="true" className="size-4 shrink-0" />
+                  </span>
                   {it.label}
                 </Link>
               );
@@ -269,9 +284,9 @@ export function AdminShell({
           </div>
         </header>
         <main className="adm-in mx-auto max-w-7xl px-4 py-6 sm:px-6">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div className="mb-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
             <div>
-              <h1 className="font-display text-2xl">{title}</h1>
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
               {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
             </div>
             {actions}
@@ -295,9 +310,9 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-lg border border-border bg-card ${className}`}>
+    <section className={`rounded-2xl border border-border/70 bg-card shadow-sm ${className}`}>
       {title && (
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-5 py-4">
           <h2 className="text-sm font-semibold">{title}</h2>
           {action}
         </div>

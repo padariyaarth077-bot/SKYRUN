@@ -45,6 +45,7 @@ import { Route as AuthenticatedAdminLeadsIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminMModuleRouteImport } from './routes/_authenticated/admin.m.$module'
 import { Route as AuthenticatedAdminQuoteIdRouteImport } from './routes/_authenticated/admin.quote.$id'
 import { Route as AuthenticatedAdminRideRequestIdRouteImport } from './routes/_authenticated/admin.ride-request.$id'
+import { Route as AuthenticatedAdminDocumentKindIdRouteImport } from './routes/_authenticated/admin.document.$kind.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -238,6 +239,12 @@ const AuthenticatedAdminRideRequestIdRoute =
     path: '/admin/ride-request/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminDocumentKindIdRoute =
+  AuthenticatedAdminDocumentKindIdRouteImport.update({
+    id: '/admin/document/$kind/$id',
+    path: '/admin/document/$kind/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -275,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/admin/quote/$id': typeof AuthenticatedAdminQuoteIdRoute
   '/admin/ride-request/$id': typeof AuthenticatedAdminRideRequestIdRoute
   '/admin/leads/': typeof AuthenticatedAdminLeadsIndexRoute
+  '/admin/document/$kind/$id': typeof AuthenticatedAdminDocumentKindIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -311,6 +319,7 @@ export interface FileRoutesByTo {
   '/admin/quote/$id': typeof AuthenticatedAdminQuoteIdRoute
   '/admin/ride-request/$id': typeof AuthenticatedAdminRideRequestIdRoute
   '/admin/leads': typeof AuthenticatedAdminLeadsIndexRoute
+  '/admin/document/$kind/$id': typeof AuthenticatedAdminDocumentKindIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -350,6 +359,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/quote/$id': typeof AuthenticatedAdminQuoteIdRoute
   '/_authenticated/admin/ride-request/$id': typeof AuthenticatedAdminRideRequestIdRoute
   '/_authenticated/admin/leads/': typeof AuthenticatedAdminLeadsIndexRoute
+  '/_authenticated/admin/document/$kind/$id': typeof AuthenticatedAdminDocumentKindIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -389,6 +399,7 @@ export interface FileRouteTypes {
     | '/admin/quote/$id'
     | '/admin/ride-request/$id'
     | '/admin/leads/'
+    | '/admin/document/$kind/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -425,6 +436,7 @@ export interface FileRouteTypes {
     | '/admin/quote/$id'
     | '/admin/ride-request/$id'
     | '/admin/leads'
+    | '/admin/document/$kind/$id'
   id:
     | '__root__'
     | '/'
@@ -463,6 +475,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/quote/$id'
     | '/_authenticated/admin/ride-request/$id'
     | '/_authenticated/admin/leads/'
+    | '/_authenticated/admin/document/$kind/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -745,6 +758,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRideRequestIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/document/$kind/$id': {
+      id: '/_authenticated/admin/document/$kind/$id'
+      path: '/admin/document/$kind/$id'
+      fullPath: '/admin/document/$kind/$id'
+      preLoaderRoute: typeof AuthenticatedAdminDocumentKindIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -760,6 +780,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminQuoteIdRoute: typeof AuthenticatedAdminQuoteIdRoute
   AuthenticatedAdminRideRequestIdRoute: typeof AuthenticatedAdminRideRequestIdRoute
   AuthenticatedAdminLeadsIndexRoute: typeof AuthenticatedAdminLeadsIndexRoute
+  AuthenticatedAdminDocumentKindIdRoute: typeof AuthenticatedAdminDocumentKindIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -775,6 +796,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminQuoteIdRoute: AuthenticatedAdminQuoteIdRoute,
   AuthenticatedAdminRideRequestIdRoute: AuthenticatedAdminRideRequestIdRoute,
   AuthenticatedAdminLeadsIndexRoute: AuthenticatedAdminLeadsIndexRoute,
+  AuthenticatedAdminDocumentKindIdRoute: AuthenticatedAdminDocumentKindIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

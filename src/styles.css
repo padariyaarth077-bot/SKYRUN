@@ -685,3 +685,25 @@ body { min-width: 320px; }
 .admin .font-display { font-family: "DM Sans", system-ui, sans-serif; font-weight: 700; letter-spacing: -0.02em; }
 @keyframes adm-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .adm-in { animation: adm-in .35s ease-out both; }
+
+/* Shared operations styling is scoped to admin; the public site is unchanged. */
+.admin main { min-width: 0; }
+.admin main input:not([type="checkbox"]):not([type="radio"]), .admin main select, .admin main textarea { border-radius: .75rem; border-color: var(--border); background-color: var(--card); min-height: 2.65rem; }
+.admin main button { border-radius: .65rem; transition: background-color .15s, box-shadow .15s; }
+.admin main :is(button,a,input,select,textarea):focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.admin main button:disabled { opacity: .5; cursor: not-allowed; }
+.admin main table { border-collapse: separate; border-spacing: 0; }
+.admin main thead { background: color-mix(in oklab,var(--primary) 5%,var(--card)); }
+.admin main th { padding-block: .9rem; font-size: .72rem; letter-spacing: .035em; }
+.admin main td { padding-block: 1rem; }
+.admin main [role="alert"] { border-radius: .8rem; background: color-mix(in oklab,var(--destructive) 6%,var(--card)); padding: .9rem 1rem; }
+.admin .adm-stat { border-radius: 1rem; border: 1px solid var(--border); background: var(--card); box-shadow: 0 2px 6px #16244406; }
+@media print { body:has(.financial-print) .admin :is(aside,header,nav), body:has(.financial-print) .no-print { display: none !important; } body:has(.financial-print) .admin > div { padding: 0 !important; } .financial-print { box-shadow: none !important; border: 0 !important; color: #111 !important; background: #fff !important; overflow: visible !important; } .financial-print tr { break-inside: avoid; } .financial-print h2 { break-after: avoid; } @page skyrun-document { margin: 18mm; } }
+
+@media print {
+  html:has(.financial-print), body:has(.financial-print), body:has(.financial-print) .admin { min-height: 0 !important; height: auto !important; padding: 0 !important; background: #fff !important; }
+  body:has(.financial-print) .admin main > :not(:has(.financial-print)) { display: none !important; }
+  body:has(.financial-print) .admin main > :has(.financial-print) > :not(.financial-print) { display: none !important; }
+  body:has(.financial-print) .admin main { max-width: none; padding: 0 !important; }
+  .financial-print { margin: 0 !important; padding: 0 !important; page: skyrun-document; }
+}

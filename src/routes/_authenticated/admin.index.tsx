@@ -185,12 +185,12 @@ function Dashboard() {
         {kpis.map((k, i) => (
           <div
             key={k.label}
-            className="adm-in rounded-lg border border-border bg-card p-4"
+            className="adm-in adm-stat p-5"
             style={{ animationDelay: `${i * 50}ms` }}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">{k.label}</span>
-              <span className={`rounded-md p-1.5 ${k.tone}`}>
+              <span className={`rounded-xl p-3 ${k.tone}`}>
                 <k.icon className="size-4" />
               </span>
             </div>

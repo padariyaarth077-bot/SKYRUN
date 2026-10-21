@@ -154,6 +154,26 @@ function CustomerDetail() {
               )}
             </div>
           </Panel>
+          <Panel title="Financial history">
+            <div className="flex flex-wrap gap-4 p-5">
+              <a
+                className="text-primary underline"
+                href={`/admin/m/invoices?q=${encodeURIComponent(customer.id)}`}
+              >
+                Invoice drafts
+              </a>
+              <a
+                className="text-primary underline"
+                href={`/admin/m/receipts?q=${encodeURIComponent(customer.id)}`}
+              >
+                Payment evidence previews
+              </a>
+              <p className="text-sm text-muted-foreground">
+                Filter the report by this customer ID: {customer.id}. Financial views require
+                management permission.
+              </p>
+            </div>
+          </Panel>
           <Panel title="Share catalogue">
             <div className="p-4">
               <CatalogueShare phone={customer.phone} />

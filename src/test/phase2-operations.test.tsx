@@ -8,7 +8,11 @@ const { from, rpc, params } = vi.hoisted(() => ({
 }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from, rpc } }));
 vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: () => (options: unknown) => ({ options, useParams: () => params }),
+  createFileRoute: () => (options: unknown) => ({
+    options,
+    useParams: () => params,
+    useSearch: () => ({}),
+  }),
   useNavigate: () => vi.fn(),
   Link: ({
     children,
@@ -185,7 +189,7 @@ it("contact messages query only CONTACT_FORM and display actual message/contact"
   fireEvent.change(screen.getByRole("textbox", { name: "Search records" }), {
     target: { value: "unmatched" },
   });
-  expect(screen.getByText("No records yet.")).toBeInTheDocument();
+  expect(screen.getByText("No records match these filters.")).toBeInTheDocument();
 });
 it("hides private module errors and never claims empty data on failure", async () => {
   from.mockReturnValue(chain(null, { message: "private database detail" }));
