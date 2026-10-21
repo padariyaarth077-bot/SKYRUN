@@ -20,8 +20,18 @@ Read-only postflight passed all 12 checks: new tables, RLS, denied direct writes
 
 ## Current release stage
 
-Database approved and applied; source publication/Worker deployment are pending. Final outcome will be appended after actual execution. Earlier production-untouched statements in Phase7 audit/verification are historical before this explicit approval.
+Database approved and applied; reviewed source published as 798f6d5 to GitHub main; Worker deployment completed successfully. Earlier production-untouched statements in Phase7 audit/verification are historical before this explicit approval.
 
 Official invoice/receipt numbering and issuance remain deliberately disabled under the owner's earlier decision. Drafts/payment previews are not issued financial documents. Phase3 real customer-email/acceptance LIVE verification remains UNVERIFIED. No real email, operational customer test, payment/deposit mutation, deletion or backfill occurred.
 
 Evidence retained locally under F:\DockerData\phase7-verification: hosted-preflight.json, hosted-function-comparison.json, hosted-postflight.json, worker-dry-run.log, phase7-integration.log and database-regressions.log. Credentials used only in memory through existing CLI profile; none in source/reports/logs.
+
+## Release completed
+
+Source commit: 798f6d5. Cached Wrangler 4.136.2 deploy exited 0 using --config .output/server/wrangler.json --name skyrun --keep-vars --compatibility-date 2026-10-20. Existing compatibility date retained; runtime variables/secrets preserved. Worker version: 32f75038-b45c-4043-ab83-4117cdb24238. URL: https://skyrun.padariyaarth077.workers.dev .
+
+Read-only live HTTP postflight: /, /book, /catalogue, admin login, /admin/m/analytics, /admin/m/invoices and /admin/m/receipts returned HTTP 200. The deployed finance-documents-BYy3kAjK.js asset SHA256 exactly matches the reviewed local production build. No privileged service key matched responses or public build. HTTP checks do not prove authenticated reads/mutations. Browser connector exposed zero tabs, so actual authenticated live admin interactions were NOT verified. No sign-in credential was requested, customer account impersonated or operational fixture created.
+
+Production schema modification: YES, exactly the approved Phase7 migration. GitHub publication: YES. Worker deployment: YES. Production business-record mutations, emails, issued documents, backfill, resets and deletion: NO. Official issuance remains disabled. Phase3 real email/acceptance live verification remains UNVERIFIED.
+
+Manual check: refresh admin, open Reports (/admin/m/analytics), Invoice Drafts (/admin/m/invoices), Payment Previews (/admin/m/receipts) and Settings. Confirm scoped data and empty states. Use only an authorized real workflow for saves; no unapproved live test operations were performed during release. No Phase8 work started.
