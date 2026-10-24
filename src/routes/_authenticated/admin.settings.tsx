@@ -1,3 +1,4 @@
+import { NotificationSettings } from "@/components/notifications";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,6 +101,9 @@ function Settings() {
       </form>
       <div className="mt-6">
         <DocumentSettings />
+        <div className="mt-6">
+          <NotificationSettings />
+        </div>
       </div>
     </AdminShell>
   );

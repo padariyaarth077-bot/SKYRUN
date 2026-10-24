@@ -1,3 +1,4 @@
+import { NotificationBell } from "@/components/notification-context";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { ADMIN_LOGIN_PATH } from "@/lib/admin-routes";
@@ -266,14 +267,7 @@ export function AdminShell({
               <ExternalLink className="size-4" />
               Website
             </Link>
-            <Link
-              to="/admin/m/$module"
-              params={{ module: "notifications" }}
-              className="rounded-md p-2 text-muted-foreground hover:bg-muted"
-              aria-label="Notifications"
-            >
-              <Bell className="size-4" />
-            </Link>
+            <NotificationBell />
             <button
               onClick={signOut}
               className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-muted"

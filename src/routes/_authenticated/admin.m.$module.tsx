@@ -1,3 +1,4 @@
+import { NotificationCenter } from "@/components/notifications";
 import { Reports } from "@/components/reports";
 import { FinanceList } from "@/components/finance-documents";
 import { ServiceConfiguration } from "@/components/service-configuration";
@@ -339,6 +340,7 @@ function ModulePage() {
   const { module } = Route.useParams();
   const { q: contextQuery = "" } = Route.useSearch();
   const special = [
+    "notifications",
     "services",
     "service-areas",
     "vehicles",
@@ -397,6 +399,7 @@ function ModulePage() {
   );
   const safePage = Math.min(page, Math.max(0, Math.ceil(filtered.length / 50) - 1));
   const displayed = core ? filtered.slice(safePage * 50, safePage * 50 + 50) : rows;
+  if (module === "notifications") return <NotificationCenter />;
   if (module === "analytics") return <Reports key="reports" initialSearch={contextQuery} />;
   if (module === "audit-log") return <Reports key="audit" initialKind="audit" auditOnly />;
   if (module === "invoices" || module === "receipts")

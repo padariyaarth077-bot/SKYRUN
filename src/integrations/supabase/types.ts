@@ -11,6 +11,68 @@ export type Database = {
   __InternalSupabase: { PostgrestVersion: "14.18" };
   public: {
     Tables: {
+      notification_preferences: Row<{
+        user_id: string;
+        in_app: boolean;
+        sound: boolean;
+        volume: number;
+        normal: boolean;
+        important: boolean;
+        urgent: boolean;
+        categories: Json;
+        email_urgent: boolean;
+        updated_at: string;
+      }>;
+      staff_notifications: Row<{
+        id: string;
+        seq: number;
+        recipient_id: string;
+        business_unit_id: string;
+        source_key: string;
+        kind: string;
+        severity: string;
+        title: string;
+        entity_type: string;
+        entity_id: string;
+        created_at: string;
+        read_at: string | null;
+      }>;
+      communication_outbox: Row<{
+        id: string;
+        business_unit_id: string;
+        source_key: string;
+        recipient_key: string;
+        kind: string;
+        entity_type: string;
+        entity_id: string;
+        customer_id: string | null;
+        staff_id: string | null;
+        recipient: string | null;
+        payload: Json;
+        subject: string | null;
+        message_text: string | null;
+        message_html: string | null;
+        state: string;
+        attempts: number;
+        attempt_id: string | null;
+        lease_until: string | null;
+        first_attempt_at: string | null;
+        next_attempt_at: string;
+        last_attempt_at: string | null;
+        provider_email_id: string | null;
+        failure_category: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
+      communication_events: Row<{
+        event_id: string;
+        provider_email_id: string;
+        kind: string;
+        recipient: string;
+        sender: string;
+        payload_hash: string;
+        created_at: string;
+      }>;
       document_profiles: Row<{
         business_unit_id: string;
         legal_name: string;
@@ -360,6 +422,37 @@ export type Database = {
       };
     };
     Functions: {
+      phase8_snapshot: { Args: Record<string, never>; Returns: Json };
+      phase8_user_action: {
+        Args: {
+          _action: string;
+          _id?: string | null;
+          _through?: number | string | null;
+          _preferences?: Json | null;
+        };
+        Returns: undefined;
+      };
+      phase8_retry: { Args: { _id: string }; Returns: undefined };
+      phase8_claim: { Args: { _attempt: string; _id?: string | null }; Returns: Json };
+      phase8_freeze: {
+        Args: { _id: string; _attempt: string; _subject: string; _text: string; _html: string };
+        Returns: Json;
+      };
+      phase8_finish: {
+        Args: { _id: string; _attempt: string; _provider: string | null };
+        Returns: undefined;
+      };
+      phase8_delivery_event: {
+        Args: {
+          _event: string;
+          _provider: string;
+          _kind: string;
+          _recipient: string;
+          _sender: string;
+          _hash: string;
+        };
+        Returns: undefined;
+      };
       phase7_save: {
         Args: {
           _operation_id: string;

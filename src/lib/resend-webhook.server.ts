@@ -100,7 +100,19 @@ export const handleResendWebhook = createServerOnlyFn(async (request: Request) =
       const processed = await supabaseAdmin.rpc("process_quote_delivery_events", {
         _provider_email_id: email.email_id,
       });
-      return reply(processed.error ? 503 : 204);
+      if (processed.error) return reply(503);
+      if (process.env["COMMUNICATION_EMAIL_MODE"] === "live") {
+        const communication = await supabaseAdmin.rpc("phase8_delivery_event", {
+          _event: verified.id,
+          _provider: email.email_id,
+          _kind: event.type,
+          _recipient: email.to[0]!,
+          _sender: sender,
+          _hash: payloadHash,
+        });
+        if (communication.error) return reply(503);
+      }
+      return reply(204);
     } catch {
       return reply(503);
     }

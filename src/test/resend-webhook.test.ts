@@ -88,6 +88,32 @@ it("accepts a signed raw body and commits the inbox before processing, without e
   });
   expect(await result.text()).toBe("");
 });
+it("tracks signed communication delivery only when the new email mode is enabled", async () => {
+  vi.stubEnv("COMMUNICATION_EMAIL_MODE", "live");
+  expect((await handleResendWebhook(request(await signed()))).status).toBe(204);
+  expect(rpc).toHaveBeenNthCalledWith(
+    3,
+    "phase8_delivery_event",
+    expect.objectContaining({
+      _event: "msg_testFixture",
+      _provider: event.data.email_id,
+      _kind: "email.delivered",
+      _sender: "support@skyrunlimo.com",
+    }),
+  );
+});
+it("asks the provider to retry when communication event persistence fails", async () => {
+  vi.stubEnv("COMMUNICATION_EMAIL_MODE", "live");
+  rpc.mockImplementation((name) =>
+    Promise.resolve({
+      data: null,
+      error: name === "phase8_delivery_event" ? { message: "private" } : null,
+    }),
+  );
+  const result = await handleResendWebhook(request(await signed()));
+  expect(result.status).toBe(503);
+  expect(await result.text()).toBe("");
+});
 it.each(["tampered body", "wrong signature", "expired timestamp", "future timestamp"])(
   "rejects %s before database access",
   async (kind) => {

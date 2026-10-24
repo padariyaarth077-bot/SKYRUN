@@ -37,6 +37,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminChatConversationsRouteImport } from './routes/_authenticated/admin.chat-conversations'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as ApiInternalCommunicationsRouteImport } from './routes/api.internal.communications'
 import { Route as ApiWebhooksResendRouteImport } from './routes/api.webhooks.resend'
 import { Route as AuthenticatedAdminBookingIdRouteImport } from './routes/_authenticated/admin.booking.$id'
 import { Route as AuthenticatedAdminCustomerIdRouteImport } from './routes/_authenticated/admin.customer.$id'
@@ -192,6 +193,12 @@ const AuthenticatedAdminSettingsRoute =
     path: '/admin/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiInternalCommunicationsRoute =
+  ApiInternalCommunicationsRouteImport.update({
+    id: '/api/internal/communications',
+    path: '/api/internal/communications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiWebhooksResendRoute = ApiWebhooksResendRouteImport.update({
   id: '/api/webhooks/resend',
   path: '/api/webhooks/resend',
@@ -273,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/admin/chat-conversations': typeof AuthenticatedAdminChatConversationsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/api/internal/communications': typeof ApiInternalCommunicationsRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/booking/$id': typeof AuthenticatedAdminBookingIdRoute
@@ -310,6 +318,7 @@ export interface FileRoutesByTo {
   '/admin/chat-conversations': typeof AuthenticatedAdminChatConversationsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/api/internal/communications': typeof ApiInternalCommunicationsRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/booking/$id': typeof AuthenticatedAdminBookingIdRoute
@@ -350,6 +359,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/chat-conversations': typeof AuthenticatedAdminChatConversationsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/api/internal/communications': typeof ApiInternalCommunicationsRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/booking/$id': typeof AuthenticatedAdminBookingIdRoute
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/admin/chat-conversations'
     | '/admin/customers'
     | '/admin/settings'
+    | '/api/internal/communications'
     | '/api/webhooks/resend'
     | '/admin/'
     | '/admin/booking/$id'
@@ -427,6 +438,7 @@ export interface FileRouteTypes {
     | '/admin/chat-conversations'
     | '/admin/customers'
     | '/admin/settings'
+    | '/api/internal/communications'
     | '/api/webhooks/resend'
     | '/admin'
     | '/admin/booking/$id'
@@ -466,6 +478,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/chat-conversations'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/settings'
+    | '/api/internal/communications'
     | '/api/webhooks/resend'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/booking/$id'
@@ -501,6 +514,7 @@ export interface RootRouteChildren {
   TermsAndConditionsRoute: typeof TermsAndConditionsRoute
   QuoteAcceptRoute: typeof QuoteAcceptRoute
   R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute: typeof R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute
+  ApiInternalCommunicationsRoute: typeof ApiInternalCommunicationsRoute
   ApiWebhooksResendRoute: typeof ApiWebhooksResendRoute
 }
 
@@ -702,6 +716,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/internal/communications': {
+      id: '/api/internal/communications'
+      path: '/api/internal/communications'
+      fullPath: '/api/internal/communications'
+      preLoaderRoute: typeof ApiInternalCommunicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/webhooks/resend': {
       id: '/api/webhooks/resend'
       path: '/api/webhooks/resend'
@@ -843,6 +864,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuoteAcceptRoute: QuoteAcceptRoute,
   R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute:
     R3ZiG4lFP04tFD1Iv4Vv97gAuthCallbackRoute,
+  ApiInternalCommunicationsRoute: ApiInternalCommunicationsRoute,
   ApiWebhooksResendRoute: ApiWebhooksResendRoute,
 }
 export const routeTree = rootRouteImport

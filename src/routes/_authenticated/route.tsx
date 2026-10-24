@@ -17,6 +17,7 @@
  */
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationProvider } from "@/components/notification-context";
 import { ADMIN_LOGIN_PATH } from "@/lib/admin-routes";
 
 // All roles that are permitted to access the admin portal.
@@ -66,5 +67,14 @@ export const Route = createFileRoute("/_authenticated")({
     return { user: data.user };
   },
 
-  component: () => <Outlet />,
+  component: AuthenticatedLayout,
 });
+
+function AuthenticatedLayout() {
+  const { user } = Route.useRouteContext();
+  return (
+    <NotificationProvider key={user.id} userId={user.id}>
+      <Outlet />
+    </NotificationProvider>
+  );
+}

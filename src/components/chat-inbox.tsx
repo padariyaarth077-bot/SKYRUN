@@ -16,9 +16,15 @@ import {
 import { usePolling } from "@/lib/use-polling";
 
 type InboxRow = Database["public"]["Views"]["chat_inbox"]["Row"];
-export function ChatInbox({ userId }: { userId: string }) {
+export function ChatInbox({
+  userId,
+  initialConversation,
+}: {
+  userId: string;
+  initialConversation?: string | undefined;
+}) {
   const [rows, setRows] = useState<InboxRow[]>([]),
-    [selected, setSelected] = useState<string>(),
+    [selected, setSelected] = useState<string | undefined>(initialConversation),
     [detail, setDetail] = useState<ChatConversation | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]),
     [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -33,7 +39,7 @@ export function ChatInbox({ userId }: { userId: string }) {
     [historyError, setHistoryError] = useState(""),
     [mutationError, setMutationError] = useState(""),
     [readWarning, setReadWarning] = useState("");
-  const selectedRef = useRef<string | undefined>(undefined),
+  const selectedRef = useRef<string | undefined>(initialConversation),
     listBusy = useRef(false),
     busy = useRef(false),
     sequence = useRef(0),
@@ -143,6 +149,14 @@ export function ChatInbox({ userId }: { userId: string }) {
     setMutationError("");
     setReadWarning("");
   };
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("skyrun-active-conversation", { detail: selected ?? null }),
+    );
+    return () => {
+      window.dispatchEvent(new CustomEvent("skyrun-active-conversation", { detail: null }));
+    };
+  }, [selected]);
   const row = rows.find((item) => item.id === selected),
     active = detail ?? row;
   const terminal = active && ["RESOLVED", "CLOSED"].includes(active.status),
