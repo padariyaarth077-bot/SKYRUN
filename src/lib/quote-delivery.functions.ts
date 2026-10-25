@@ -79,6 +79,7 @@ export const getQuoteDeliveryStatus = createServerFn({ method: "POST" })
 export const sendQuoteEmail = createServerFn({ method: "POST" })
   .validator((input: unknown) => sendQuoteSchema.parse(input))
   .handler(async ({ data }) => {
+    let stage = "staff_access";
     try {
       const client = await staffClient(),
         config = configuration();
@@ -92,9 +93,11 @@ export const sendQuoteEmail = createServerFn({ method: "POST" })
           ok: false as const,
           message: "Test mode permits only the approved test recipient.",
         };
+      stage = "capability";
       const { deriveDeliveryCapability } = await import("@/lib/quote-acceptance.server");
       const capability = await deriveDeliveryCapability(data.deliveryId),
         attemptId = crypto.randomUUID();
+      stage = "begin_delivery";
       const begun = await client.rpc("begin_quote_delivery", {
         _quote_id: data.quoteId,
         _delivery_id: data.deliveryId,
@@ -123,6 +126,7 @@ export const sendQuoteEmail = createServerFn({ method: "POST" })
         .object({ proceed: z.boolean(), state: deliveryStatusSchema.shape.state })
         .parse(begun.data);
       if (!claim.proceed) return { ok: true as const, state: claim.state };
+      stage = "saved_snapshot";
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const [saved, link] = await Promise.all([
         supabaseAdmin.from("quote_deliveries").select("*").eq("id", data.deliveryId).single(),
@@ -140,9 +144,12 @@ export const sendQuoteEmail = createServerFn({ method: "POST" })
         link.data.token_hash !== capability.tokenHash ||
         link.data.quote_id !== data.quoteId ||
         link.data.recipient_email.toLowerCase() !== data.reviewedRecipient.toLowerCase()
-      )
+      ) {
+        console.info('{"event":"quote_delivery_failure","stage":"saved_snapshot"}');
         return { ok: false as const, message: deliveryFailure };
+      }
       let providerId: string;
+      stage = "email_transport";
       try {
         const { submitQuoteEmail } = await import("@/lib/quote-email.server");
         const result = await submitQuoteEmail({
@@ -154,6 +161,7 @@ export const sendQuoteEmail = createServerFn({ method: "POST" })
         });
         providerId = result.providerEmailId;
       } catch {
+        console.info('{"event":"quote_delivery_failure","stage":"email_transport"}');
         await supabaseAdmin.rpc("finish_quote_delivery", {
           _delivery_id: data.deliveryId,
           _attempt_id: attemptId,
@@ -161,22 +169,34 @@ export const sendQuoteEmail = createServerFn({ method: "POST" })
         });
         return { ok: false as const, message: deliveryFailure };
       }
+      stage = "finish_delivery";
       const finish = await supabaseAdmin.rpc("finish_quote_delivery", {
         _delivery_id: data.deliveryId,
         _attempt_id: attemptId,
         _provider_email_id: providerId,
       });
-      if (finish.error) return { ok: false as const, message: deliveryFailure };
+      if (finish.error) {
+        console.info('{"event":"quote_delivery_failure","stage":"finish_delivery"}');
+        return { ok: false as const, message: deliveryFailure };
+      }
+      stage = "delivery_events";
       const processed = await supabaseAdmin.rpc("process_quote_delivery_events", {
         _provider_email_id: providerId,
       });
-      if (processed.error) return { ok: false as const, message: deliveryFailure };
+      if (processed.error) {
+        console.info('{"event":"quote_delivery_failure","stage":"delivery_events"}');
+        return { ok: false as const, message: deliveryFailure };
+      }
+      stage = "delivery_status";
       const final = await client.rpc("quote_delivery_status", { _quote_id: data.quoteId });
       const persisted = deliveryStatusSchema.safeParse(final.data);
-      if (final.error || !persisted.success)
+      if (final.error || !persisted.success) {
+        console.info('{"event":"quote_delivery_failure","stage":"delivery_status"}');
         return { ok: false as const, message: deliveryFailure };
+      }
       return { ok: true as const, state: persisted.data.state };
     } catch {
+      console.info(JSON.stringify({ event: "quote_delivery_failure", stage }));
       return { ok: false as const, message: deliveryFailure };
     }
   });

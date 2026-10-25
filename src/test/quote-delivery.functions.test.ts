@@ -94,6 +94,7 @@ beforeEach(async () => {
   send.mockResolvedValue({ providerEmailId: data.quoteId, state: "provider_accepted" });
 });
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
 });
@@ -210,8 +211,10 @@ it("records ambiguous network failures without claiming SENT or losing the stabl
   );
 });
 it("does not report success when storing the provider result fails", async () => {
+  const log = vi.spyOn(console, "info").mockImplementation(() => {});
   adminRpc.mockResolvedValue({ data: null, error: {} });
   expect((await sendQuoteEmail({ data })).ok).toBe(false);
+  expect(log).toHaveBeenCalledWith('{"event":"quote_delivery_failure","stage":"finish_delivery"}');
 });
 it("reads saved delivery state through the scoped client and reports disabled configuration honestly", async () => {
   vi.stubEnv("QUOTE_EMAIL_MODE", "");

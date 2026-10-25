@@ -10,10 +10,46 @@ const input = {
   isTest: true,
 };
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
 });
 describe("prepared Resend quote transport (mocked, no live sending)", () => {
+  it.each([
+    { kind: "http", expected: "provider_response", status: 403, timeout: false },
+    { kind: "network", expected: "request", status: undefined, timeout: false },
+    { kind: "timeout", expected: "request", status: undefined, timeout: true },
+    { kind: "format", expected: "response_format", status: 200, timeout: false },
+  ])("logs only safe diagnostics for $kind", async ({ kind, expected, status, timeout }) => {
+    vi.stubEnv("RESEND_API_KEY", "SECRET-NEVER-LOG");
+    const log = vi.spyOn(console, "info").mockImplementation(() => {});
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        if (kind === "network" || kind === "timeout") {
+          const error = new Error("SECRET-NEVER-LOG private provider content");
+          if (kind === "timeout") error.name = "TimeoutError";
+          throw error;
+        }
+        return {
+          ok: kind !== "http",
+          status,
+          json: async () => ({ private: "SECRET-NEVER-LOG" }),
+        };
+      }),
+    );
+    await expect(submitQuoteEmail(input)).rejects.toThrow("submission could not be confirmed");
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(log.mock.calls[0]![0])).toEqual({
+      event: "quote_email_failure",
+      stage: expected,
+      ...(status ? { status } : {}),
+      timeout,
+    });
+    const output = JSON.stringify(log.mock.calls);
+    for (const privateValue of ["SECRET-NEVER-LOG", input.to, input.text, input.deliveryId])
+      expect(output).not.toContain(privateValue);
+  });
   it("fails closed without a secret", async () => {
     vi.stubEnv("RESEND_API_KEY", "");
     const fetchMock = vi.fn();
