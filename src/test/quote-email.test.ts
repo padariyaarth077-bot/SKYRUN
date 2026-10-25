@@ -82,7 +82,19 @@ describe("prepared Resend quote transport (mocked, no live sending)", () => {
     expect(body.text).toContain("not a confirmed booking");
     expect(body.subject).toMatch(/^\[TEST ONLY\]/);
     expect(body.html).toBeUndefined();
-    expect(request.redirect).toBe("error");
+    expect(request.redirect).toBe("manual");
+  });
+  it("rejects redirects without following them or accepting a provider result", async () => {
+    vi.stubEnv("RESEND_API_KEY", "test-placeholder");
+    const json = vi.fn();
+    const fetchMock = vi.fn(async (_url, init) => {
+      expect(init.redirect).toBe("manual");
+      return { ok: false, status: 302, json };
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(submitQuoteEmail(input)).rejects.toThrow("submission could not be confirmed");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(json).not.toHaveBeenCalled();
   });
   it.each(["http", "network", "missing-id", "invalid-json"])(
     "sanitizes %s failure",

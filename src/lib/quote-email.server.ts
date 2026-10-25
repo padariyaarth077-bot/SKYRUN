@@ -39,7 +39,8 @@ export const submitQuoteEmail = createServerOnlyFn(async (input: z.input<typeof 
         text: data.text,
       }),
       signal: AbortSignal.timeout(15000),
-      redirect: "error",
+      // Workers supports manual/follow only; reject redirects via response.ok below.
+      redirect: "manual",
     });
     status =
       Number.isInteger(response.status) && response.status >= 100 && response.status <= 599
