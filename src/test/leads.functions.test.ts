@@ -1,3 +1,6 @@
+vi.mock("@/lib/public-budget.server", () => ({
+  enforcePublicBudget: vi.fn().mockResolvedValue(undefined),
+}));
 import { beforeEach, expect, it, vi } from "vitest";
 
 const { rpc, from } = vi.hoisted(() => ({ rpc: vi.fn(), from: vi.fn() }));
@@ -26,40 +29,47 @@ const data = {
 };
 beforeEach(() => vi.resetAllMocks());
 
-it("keeps generic contact leads separate and scopes customer lookup to the limo business unit", async () => {
-  const customer = {
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    maybeSingle: vi.fn().mockResolvedValue({ data: { id: "customer" }, error: null }),
-  };
-  const lead = {
-    insert: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({
-      data: { id: "lead", business_unit_id: "00000000-0000-0000-0000-000000000002" },
-      error: null,
+it("keeps contact submissions atomic, correctly scoped and distinct from rides", async () => {
+  rpc.mockResolvedValue({ data: { reference: "SR-CONTACT" }, error: null });
+  await expect(
+    submitLead({
+      data: {
+        source: "CONTACT_FORM",
+        name: "Ava",
+        email: "ava@example.com",
+        phone: "12345",
+        submissionKey: data.submissionKey,
+      },
     }),
-  };
-  const activity = { insert: vi.fn().mockResolvedValue({ error: null }) };
-  from.mockImplementation((table: string) =>
-    table === "customers" ? customer : table === "leads" ? lead : activity,
+  ).resolves.toEqual({ ok: true, reference: "SR-CONTACT" });
+  expect(rpc).toHaveBeenCalledWith(
+    "phase9_contact",
+    expect.objectContaining({
+      _key: data.submissionKey,
+      _source: "CONTACT_FORM",
+      _email: "ava@example.com",
+    }),
   );
+  expect(from).not.toHaveBeenCalled();
+});
+it("rejects failed contact transactions without exposing database details", async () => {
+  rpc.mockResolvedValue({ data: null, error: { message: "private" } });
   await expect(
     submitLead({
       data: { source: "CONTACT_FORM", name: "Ava", email: "ava@example.com", phone: "12345" },
     }),
-  ).resolves.toMatchObject({ ok: true });
-  expect(customer.eq).toHaveBeenCalledWith(
-    "business_unit_id",
-    "00000000-0000-0000-0000-000000000002",
-  );
-  expect(lead.insert).toHaveBeenCalledWith(
-    expect.objectContaining({ source: "CONTACT_FORM", customer_id: "customer", status: "NEW" }),
-  );
-  expect(from).not.toHaveBeenCalledWith("ride_requests");
-  expect(rpc).not.toHaveBeenCalled();
+  ).rejects.toThrow("Could not save your request");
 });
-
+it("preserves the legacy chatbot subject and message defaults", async () => {
+  rpc.mockResolvedValue({ data: { reference: "SR-CONTACT" }, error: null });
+  await submitLead({
+    data: { source: "CHATBOT", name: "Ava", email: "ava@example.com", phone: "12345" },
+  });
+  expect(rpc).toHaveBeenCalledWith(
+    "phase9_contact",
+    expect.objectContaining({ _source: "CHATBOT", _subject: "Chatbot enquiry", _message: "Ava" }),
+  );
+});
 it("calls the ride RPC with the server-selected tenant and mapped fields", async () => {
   rpc.mockResolvedValue({ data: { reference: "SR-TEST" }, error: null });
   await expect(submitRideEnquiry({ data })).resolves.toEqual({ ok: true, reference: "SR-TEST" });

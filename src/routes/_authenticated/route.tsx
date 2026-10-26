@@ -19,6 +19,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationProvider } from "@/components/notification-context";
 import { ADMIN_LOGIN_PATH } from "@/lib/admin-routes";
+import { managementPage } from "@/lib/admin-access";
 
 // All roles that are permitted to access the admin portal.
 const ALLOWED_ROLES = [
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/_authenticated")({
   // Must be client-side only — `getUser()` needs the browser session storage.
   ssr: false,
 
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     // `getUser()` makes a network request to Supabase to validate the JWT.
     // This is the authoritative check; it cannot be spoofed by a modified
     // local storage entry the way `getSession()` can.
@@ -63,11 +64,27 @@ export const Route = createFileRoute("/_authenticated")({
       });
     }
 
+    if (managementPage(location.pathname)) {
+      const permission = await supabase.rpc("phase9_management_access");
+      if (permission.error || permission.data !== true)
+        throw new Error("Management access is required for this page. Check your role and retry.");
+    }
     // Pass the verified user object to all child routes via context.
     return { user: data.user };
   },
 
   component: AuthenticatedLayout,
+  errorComponent: () => (
+    <main className="mx-auto max-w-xl space-y-4 p-8">
+      <h1 className="text-xl font-semibold">Page unavailable</h1>
+      <p role="alert">
+        Check your staff permissions and connection, then retry. No records were changed.
+      </p>
+      <a href="/admin" className="underline">
+        Return to dashboard
+      </a>
+    </main>
+  ),
 });
 
 function AuthenticatedLayout() {

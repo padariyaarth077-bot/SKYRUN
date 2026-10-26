@@ -11,6 +11,7 @@ export type Database = {
   __InternalSupabase: { PostgrestVersion: "14.18" };
   public: {
     Tables: {
+      request_budgets: Row<{ subject_hash: string; scope: string; bucket: string; used: number }>;
       notification_preferences: Row<{
         user_id: string;
         in_app: boolean;
@@ -223,6 +224,7 @@ export type Database = {
           business_unit_id: string;
           customer_id: string | null;
           lead_number: string;
+          submission_key: string | null;
           source: Database["public"]["Enums"]["lead_source"];
           status: Database["public"]["Enums"]["lead_status"];
           priority: string;
@@ -422,6 +424,29 @@ export type Database = {
       };
     };
     Functions: {
+      phase9_lead_status: {
+        Args: {
+          _id: string;
+          _status: Database["public"]["Enums"]["lead_status"];
+          _expected: Database["public"]["Enums"]["lead_status"];
+          _reason?: string | null;
+        };
+        Returns: undefined;
+      };
+      phase9_contact: {
+        Args: {
+          _key: string;
+          _source: "CONTACT_FORM" | "CHATBOT";
+          _name: string;
+          _email: string;
+          _phone: string;
+          _subject: string;
+          _message: string;
+        };
+        Returns: Json;
+      };
+      phase9_management_access: { Args: Record<PropertyKey, never>; Returns: boolean };
+      phase9_budget: { Args: { _subject: string; _scope: string }; Returns: boolean };
       phase8_snapshot: { Args: Record<string, never>; Returns: Json };
       phase8_user_action: {
         Args: {

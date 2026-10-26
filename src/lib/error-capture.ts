@@ -16,6 +16,8 @@ const CAUSE_DEPTH_LIMIT = 5;
 const DESCRIPTION_LENGTH_LIMIT = 8_000;
 
 export function describeError(error: unknown): string {
+  // Provider/DB exceptions can contain credentials, bearer URLs or customer input.
+  if (process.env["NODE_ENV"] === "production") return "ServerError (details withheld)";
   const parts: string[] = [];
   let current: unknown = error;
   for (let depth = 0; depth < CAUSE_DEPTH_LIMIT && current != null; depth++) {
@@ -55,7 +57,8 @@ function isErrorLike(value: unknown): value is Error {
 const originalConsoleError = console.error.bind(console);
 console.error = (...args: unknown[]) => {
   const expanded = args.map((arg) => {
-    if (!isErrorLike(arg)) return arg;
+    if (!isErrorLike(arg))
+      return process.env["NODE_ENV"] === "production" ? "[server context withheld]" : arg;
     record(arg);
     return describeError(arg);
   });

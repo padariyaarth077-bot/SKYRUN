@@ -25,6 +25,8 @@ declare global {
 }
 
 export function reportLovableError(error: unknown, context: Record<string, unknown> = {}) {
+  // Preview diagnostics must not forward production customer/credential context.
+  if (import.meta.env.PROD) return;
   if (typeof window === "undefined") return;
   window.__lovableEvents?.captureException?.(
     error,

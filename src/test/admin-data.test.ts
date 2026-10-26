@@ -55,52 +55,39 @@ it("treats NEW and REVIEWING as Needs Review only", () => {
   expect(matchesLeadStatus("REVIEWING", "NEEDS_REVIEW")).toBe(true);
   expect(matchesLeadStatus("GENUINE", "NEEDS_REVIEW")).toBe(false);
 });
-it("records review metadata only after a confirmed write", async () => {
-  await setLeadStatus("lead", "SPAM", "staff", "Duplicate");
-  expect(update).toHaveBeenCalledWith(
-    expect.objectContaining({ status: "SPAM", reviewed_by: "staff", spam_reason: "Duplicate" }),
-  );
-  expect(rpc).toHaveBeenCalledWith(
-    "log_activity",
-    expect.objectContaining({ _entity_id: "lead", _activity_type: "STATUS_CHANGE" }),
-  );
+it("uses one atomic RPC and never trusts the caller-supplied actor", async () => {
+  await setLeadStatus("lead", "SPAM", "forged-actor", "Duplicate");
+  expect(rpc).toHaveBeenCalledWith("phase9_lead_status", {
+    _id: "lead",
+    _status: "SPAM",
+    _expected: "NEW",
+    _reason: "Duplicate",
+  });
+  expect(update).not.toHaveBeenCalled();
 });
-it("does not create audit activity when status write is denied", async () => {
-  single
-    .mockReset()
-    .mockResolvedValueOnce({ data: { status: "NEW" }, error: null })
-    .mockResolvedValueOnce({ data: null, error: { message: "private" } });
-  await expect(setLeadStatus("lead", "GENUINE", "staff")).rejects.toThrow("Could not save");
-  expect(rpc).not.toHaveBeenCalled();
-});
-it("reports partial audit failure accurately", async () => {
+it("fails safely when the atomic mutation is denied", async () => {
   rpc.mockResolvedValue({ error: { message: "private" } });
   await expect(setLeadStatus("lead", "GENUINE", "staff")).rejects.toThrow(
-    "Status saved, but activity could not be recorded",
+    "Could not save the lead status",
   );
+  expect(update).not.toHaveBeenCalled();
 });
 it("rejects unsupported statuses before querying", async () => {
   await expect(setLeadStatus("lead", "FAKE" as never, "staff")).rejects.toThrow("Unsupported");
   expect(from).not.toHaveBeenCalled();
 });
-
-it("does not repeat a status or audit already saved", async () => {
+it("sends an expected current status so the server can reject stale requests", async () => {
   single.mockReset().mockResolvedValue({ data: { status: "GENUINE" }, error: null });
   await setLeadStatus("lead", "GENUINE", "staff");
-  expect(update).not.toHaveBeenCalled();
-  expect(rpc).not.toHaveBeenCalled();
+  expect(rpc).toHaveBeenCalledWith(
+    "phase9_lead_status",
+    expect.objectContaining({ _expected: "GENUINE" }),
+  );
 });
-
-it("sanitizes unexpected transport exceptions before status mutation", async () => {
-  single.mockReset().mockRejectedValue(new Error("private transport credentials"));
+it("sanitizes transport failures before a mutation", async () => {
+  single.mockReset().mockRejectedValue(new Error("private credentials"));
   await expect(setLeadStatus("lead", "GENUINE", "staff")).rejects.toThrow(
     "Could not save the lead status",
   );
   expect(rpc).not.toHaveBeenCalled();
-});
-it("reports confirmed status if the audit transport throws", async () => {
-  rpc.mockRejectedValue(new Error("private transport"));
-  await expect(setLeadStatus("lead", "GENUINE", "staff")).rejects.toThrow(
-    "Status saved, but activity could not be recorded",
-  );
 });

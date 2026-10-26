@@ -1,3 +1,6 @@
+vi.mock("@/lib/public-budget.server", () => ({
+  enforcePublicBudget: vi.fn().mockResolvedValue(undefined),
+}));
 import { webcrypto } from "node:crypto";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const { rpc, setHeader } = vi.hoisted(() => ({ rpc: vi.fn(), setHeader: vi.fn() }));

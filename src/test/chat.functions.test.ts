@@ -1,3 +1,6 @@
+vi.mock("@/lib/public-budget.server", () => ({
+  enforcePublicBudget: vi.fn().mockResolvedValue(undefined),
+}));
 import { createHash } from "node:crypto";
 import { beforeEach, expect, it, vi } from "vitest";
 

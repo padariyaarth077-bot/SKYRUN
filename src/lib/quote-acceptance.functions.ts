@@ -15,6 +15,8 @@ export const customerQuoteAcceptance = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
+      const { enforcePublicBudget } = await import("@/lib/public-budget.server");
+      await enforcePublicBudget("acceptance");
       const { setResponseHeader } = await import("@tanstack/react-start/server");
       setResponseHeader("Cache-Control", "no-store, private");
       setResponseHeader("Referrer-Policy", "no-referrer");

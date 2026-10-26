@@ -74,7 +74,7 @@ function ForgotPasswordPage() {
         }
         // For all other errors we still show the neutral confirmation to
         // prevent enumeration — but log for debugging.
-        console.error("[forgot-password]", error.message);
+        console.error("[forgot-password] Recovery request failed");
       }
 
       // Always show the neutral confirmation regardless of whether the address exists.

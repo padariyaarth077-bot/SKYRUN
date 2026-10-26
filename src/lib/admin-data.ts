@@ -76,52 +76,21 @@ export async function fetchLeads(): Promise<Lead[]> {
 export async function setLeadStatus(
   leadId: string,
   status: LeadStatus,
-  actorId: string,
+  _actorId: string,
   reason?: string,
 ) {
   if (!ALL_LEAD_STATUSES.includes(status)) throw new Error("Unsupported lead status.");
-  let statusSaved = false;
   try {
     const current = await supabase.from("leads").select("status").eq("id", leadId).single();
-    if (current.error || !current.data)
-      throw new Error("Could not read this lead. Please refresh and retry.");
-    if (current.data.status === status) return;
-    const review = status === "GENUINE" || status === "SPAM";
-    const { error, data } = await supabase
-      .from("leads")
-      .update({
-        status,
-        ...(review
-          ? {
-              reviewed_at: new Date().toISOString(),
-              reviewed_by: actorId,
-              spam_reason: status === "SPAM" ? reason?.trim() || null : null,
-            }
-          : {}),
-      })
-      .eq("id", leadId)
-      .eq("status", current.data.status)
-      .select("id")
-      .single();
-    if (error || !data)
-      throw new Error("Could not save the lead status. Please refresh and retry.");
-    statusSaved = true;
-    const { error: activityError } = await supabase.rpc("log_activity", {
-      _entity_type: "lead",
-      _entity_id: leadId,
-      _activity_type: "STATUS_CHANGE",
-      _description: `Marked as ${status}`,
-      _metadata: { actor_id: actorId },
+    if (current.error || !current.data) throw Error();
+    const result = await supabase.rpc("phase9_lead_status", {
+      _id: leadId,
+      _status: status,
+      _expected: current.data.status,
+      _reason: reason?.trim() || null,
     });
-    if (activityError)
-      throw new Error("Status saved, but activity could not be recorded. Refresh before retrying.");
-  } catch (error) {
-    const safeMessages = [
-      "Could not read this lead. Please refresh and retry.",
-      "Could not save the lead status. Please refresh and retry.",
-      "Status saved, but activity could not be recorded. Refresh before retrying.",
-    ];
-    if (error instanceof Error && safeMessages.includes(error.message)) throw error;
-    throw new Error(statusSaved ? safeMessages[2] : safeMessages[1]);
+    if (result.error) throw Error();
+  } catch {
+    throw new Error("Could not save the lead status. Check permission, refresh and retry safely.");
   }
 }

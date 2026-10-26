@@ -53,13 +53,20 @@ function Settings() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy.current || !profileLoaded) return;
+    if (name.trim().length > 200) {
+      setMsg("Use no more than 200 characters.");
+      return;
+    }
     busy.current = true;
     setPending(true);
     setMsg("");
     try {
       const { error } = await supabase
         .from("profiles")
-        .upsert({ id: user.id, full_name: name.trim() });
+        .update({ full_name: name.trim() })
+        .eq("id", user.id)
+        .select("id")
+        .single();
       setMsg(error ? "Could not save your profile. Entries are preserved; retry." : "Saved.");
     } catch {
       setMsg("Could not save your profile. Retry safely.");
@@ -86,6 +93,7 @@ function Settings() {
         <label className="block text-sm">
           Full name
           <input
+            maxLength={200}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="mt-1 w-full rounded border border-border bg-background px-3 py-2"

@@ -33,6 +33,8 @@ export const startChat = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
+    const { enforcePublicBudget } = await import("@/lib/public-budget.server");
+    await enforcePublicBudget("chat_start");
     const session = data.session ?? randomBytes(32).toString("base64url");
     const client = await admin();
     const { data: conversation, error } = await client.rpc("chat_start_conversation", {
@@ -46,6 +48,8 @@ export const startChat = createServerFn({ method: "POST" })
 export const loadChat = createServerFn({ method: "POST" })
   .validator(chatPageInput.parse)
   .handler(async ({ data }) => {
+    const { enforcePublicBudget } = await import("@/lib/public-budget.server");
+    await enforcePublicBudget("chat_read");
     const client = await admin();
     const { data: result, error } = await client.rpc("chat_load_page", {
       _session_token_hash: hashSession(data.session),
@@ -59,6 +63,8 @@ export const loadChat = createServerFn({ method: "POST" })
 export const sendChatMessage = createServerFn({ method: "POST" })
   .validator(chatMessageSchema.parse)
   .handler(async ({ data }) => {
+    const { enforcePublicBudget } = await import("@/lib/public-budget.server");
+    await enforcePublicBudget("chat_write");
     const client = await admin();
     const sessionHash = hashSession(data.session);
     const { data: result, error } = await client.rpc("chat_send_message", {
@@ -80,6 +86,8 @@ export const sendChatMessage = createServerFn({ method: "POST" })
 export const requestChatHandoff = createServerFn({ method: "POST" })
   .validator(z.object({ session: z.string().regex(/^[A-Za-z0-9_-]{43,128}$/) }).parse)
   .handler(async ({ data }) => {
+    const { enforcePublicBudget } = await import("@/lib/public-budget.server");
+    await enforcePublicBudget("chat_write");
     const client = await admin();
     const { data: result, error } = await client.rpc("chat_request_handoff", {
       _session_token_hash: hashSession(data.session),
@@ -92,6 +100,8 @@ export const submitChatContact = createServerFn({ method: "POST" })
   .validator(chatContactSchema.parse)
   .handler(async ({ data }) => {
     if (data.website) return { ok: true, reference: "" };
+    const { enforcePublicBudget } = await import("@/lib/public-budget.server");
+    await enforcePublicBudget("chat_write");
     const client = await admin();
     const { data: result, error } = await client.rpc("chat_capture_contact", {
       _session_token_hash: hashSession(data.session),

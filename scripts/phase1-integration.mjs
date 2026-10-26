@@ -438,10 +438,11 @@ test("RPC privileges and JWT validation reject untrusted callers", async () => {
 
 test("authorized staff can review the enquiry while trip status remains pending", async () => {
   ok(
-    await staff
-      .from("leads")
-      .update({ status: "GENUINE", reviewed_at: new Date().toISOString() })
-      .eq("id", primary.lead_id),
+    await staff.rpc("phase9_lead_status", {
+      _id: primary.lead_id,
+      _status: "GENUINE",
+      _expected: "NEW",
+    }),
   );
   assert.equal(
     ok(await staff.from("leads").select("status").eq("id", primary.lead_id).single()).status,
