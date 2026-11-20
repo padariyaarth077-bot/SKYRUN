@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { InnerPage } from "@/components/inner-page";
-import img from "@/assets/skyrun-executive.jpg";
+import { PublicFleet } from "@/components/public-fleet";
+import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 
 export const Route = createFileRoute("/fleet")({
   head: () => ({
@@ -26,28 +26,20 @@ export const Route = createFileRoute("/fleet")({
 
 function FleetPage() {
   return (
-    <InnerPage
-      eyebrow="The fleet"
-      title="Arrive in"
-      accent="quiet confidence."
-      intro="Luxury sedan, SUV and executive vehicle categories available on request in Chicago."
-      image={img}
-      blocks={[
-        {
-          title: "Luxury sedan",
-          body: "Suited to solo travelers and airport runs. Typically up to 3 passengers.",
-        },
-        {
-          title: "Luxury SUV",
-          body: "Extra room for luggage and small groups. Typically up to 6 passengers.",
-        },
-        { title: "Executive van", body: "For teams and larger groups." },
-        { title: "Premium limousine", body: "For occasions that call for more." },
-        {
-          title: "Please note",
-          body: "Vehicle categories are illustrative. Exact vehicles, capacity and availability are confirmed when Skyrun replies to your request.",
-        },
-      ]}
-    />
+    <div className="public-site">
+      <SiteHeader />
+      <main id="main-content">
+        <div className="page-width fleet-intro">
+          <p className="mobility-kicker">THE SKYRUN FLEET</p>
+          <h1>Your ride. Your choice.</h1>
+          <p>
+            Compare regular categories for Chicago and surrounding suburbs, or request a specific
+            vehicle from our Special Fleet. Every journey starts with an enquiry.
+          </p>
+        </div>
+        <PublicFleet />
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

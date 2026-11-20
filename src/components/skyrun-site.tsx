@@ -1,151 +1,25 @@
+import { EnquiryConfirmation } from "@/components/enquiry-confirmation";
+import { HeroCarousel } from "@/components/hero-carousel";
 import { ChatWidget } from "@/components/chat-widget";
 import { submitRideEnquiry } from "@/lib/leads.functions";
+import { submitRegularRide } from "@/lib/regular-booking.functions";
+import { regularCode, regularRideSchema } from "@/lib/regular-booking.shared";
 import { rideEnquirySchema } from "@/lib/ride-enquiry.shared";
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import {
-  ArrowDown,
-  ArrowRight,
-  ArrowUpRight,
-  BriefcaseBusiness,
-  CalendarDays,
-  Check,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Clock3,
-  MapPin,
-  Plane,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { useRef, useState, type FormEvent } from "react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, ArrowUpRight, Plane, BriefcaseBusiness, MapPin, Clock3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/skyrun-hero.jpg";
-import airportImage from "@/assets/skyrun-airport.jpg";
+import { Brand, SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { PublicFleet } from "@/components/public-fleet";
 import chicagoImage from "@/assets/skyrun-chicago.jpg";
-import executiveImage from "@/assets/skyrun-executive.jpg";
-import suvImage from "@/assets/skyrun-suv.jpg";
-import limoImage from "@/assets/skyrun-limo.jpg";
-import vanImage from "@/assets/skyrun-van.jpg";
-import interiorImage from "@/assets/skyrun-interior.jpg";
-
-const slides = [
-  { image: heroImage, label: "Chicago, after hours" },
-  { image: suvImage, label: "A hotel arrival downtown" },
-  { image: airportImage, label: "A considered airport arrival" },
-  { image: interiorImage, label: "The city from the back seat" },
-  { image: chicagoImage, label: "The Chicago skyline" },
-];
-
-const services = [
-  {
-    number: "01",
-    title: "Airport transfers",
-    description: "To and from O'Hare, Midway and all airports.",
-    image: airportImage,
-    imageAlt: "Executive sedan outside an airport terminal",
-    anchor: "airport",
-  },
-  {
-    number: "02",
-    title: "Private chauffeur",
-    description: "Your own chauffeur, shaped around your day.",
-    image: suvImage,
-    imageAlt: "Chauffeur opening an SUV door at a Chicago hotel",
-    anchor: "book",
-  },
-  {
-    number: "03",
-    title: "Corporate transportation",
-    description: "Corporate travel made easy.",
-    image: executiveImage,
-    imageAlt: "Chauffeur preparing a vehicle downtown",
-    anchor: "corporate",
-  },
-  {
-    number: "04",
-    title: "Hourly service",
-    description: "As you need, for as long as you need.",
-    image: interiorImage,
-    imageAlt: "Luxury rear cabin with Chicago skyline view",
-    anchor: "book",
-  },
-  {
-    number: "05",
-    title: "Point-to-point",
-    description: "One way or round trip.",
-    image: heroImage,
-    imageAlt: "Black vehicle on a downtown Chicago street",
-    anchor: "book",
-  },
-  {
-    number: "06",
-    title: "Special occasions",
-    description: "Weddings, celebrations and evenings out.",
-    image: limoImage,
-    imageAlt: "Limousine outside an elegant venue",
-    anchor: "occasions",
-  },
-  {
-    number: "07",
-    title: "Group transportation",
-    description: "Room for teams, families and events.",
-    image: vanImage,
-    imageAlt: "Black executive van in Chicago",
-    anchor: "book",
-  },
-  {
-    number: "08",
-    title: "Long-distance",
-    description: "Chicago to all destinations.",
-    image: chicagoImage,
-    imageAlt: "Chicago skyline at golden hour",
-    anchor: "chicago",
-  },
-];
-
-const fleet = [
-  {
-    name: "Luxury SUV",
-    category: "SUV",
-    description: "Room for luggage and small groups.",
-    image: suvImage,
-    alt: "Black luxury SUV at a Chicago hotel entrance",
-  },
-  {
-    name: "Luxury sedan",
-    category: "SEDAN",
-    description: "A composed choice for airport and city travel.",
-    image: airportImage,
-    alt: "Black sedan at an airport terminal",
-  },
-  {
-    name: "Executive transportation",
-    category: "EXECUTIVE",
-    description: "For meetings, clients and business days.",
-    image: executiveImage,
-    alt: "Chauffeur beside an executive vehicle",
-  },
-  {
-    name: "Premium limousine",
-    category: "LIMOUSINE",
-    description: "For occasions that call for more.",
-    image: limoImage,
-    alt: "Black stretch limousine at night",
-  },
-  {
-    name: "Executive van",
-    category: "GROUP",
-    description: "For teams and larger parties.",
-    image: vanImage,
-    alt: "Black executive van in downtown Chicago",
-  },
-];
-
+export { Brand };
+import { VEHICLE_MODELS } from "@/lib/vehicle-images";
+import { REGULAR_FLEET } from "@/lib/public-fleet";
 export const faqs = [
   {
     question: "How do I request a Skyrun ride?",
     answer:
-      "Send a request through the form below or call one of the contacts on the business card. Your ride is not confirmed until Skyrun responds directly.",
+      "Share your trip details through our enquiry form or call the team directly. Your booking is confirmed after Skyrun agrees the arrangements with you.",
   },
   {
     question: "Do you provide airport transportation?",
@@ -155,7 +29,7 @@ export const faqs = [
   {
     question: "Can I request hourly or corporate transportation?",
     answer:
-      "The business card references hourly and corporate travel. Share your itinerary and timing so the team can confirm the right arrangement.",
+      "Yes. Share your itinerary, stops and timing so the team can discuss a suitable arrangement for your day.",
   },
   {
     question: "Which vehicles are available?",
@@ -165,25 +39,25 @@ export const faqs = [
   {
     question: "What areas do you serve?",
     answer:
-      "Skyrun is based in Chicago, Illinois, and the business card references Chicago-to-airport and destination travel. Contact the team to confirm your specific pickup and destination.",
+      "Plan your travel across Chicago and surrounding suburbs. Share your pickup and destination so our team can confirm your route.",
   },
   {
     question: "Is my booking confirmed when I submit the form?",
     answer:
-      "No. The form prepares a request email for Skyrun. The team must confirm availability and details with you directly.",
+      "No. The form sends an enquiry to Skyrun. The team must confirm availability and details with you directly.",
   },
 ];
 
-const contacts = [
-  { name: "Vrund Patel", phone: "224-619-2024", href: "+12246192024" },
-  { name: "Nisharg Patel", phone: "779-240-6371", href: "+17792406371" },
-];
-
-import { Brand, SiteHeader, SiteFooter } from "@/components/site-chrome";
-export { Brand };
-
-export function BookingForm({ compact = false }: { compact?: boolean }) {
+export function BookingForm({
+  compact = false,
+  initialVehicle = "",
+}: {
+  compact?: boolean;
+  initialVehicle?: string;
+}) {
   const [status, setStatus] = useState("");
+  const [reference, setReference] = useState("");
+  const [selectedVehicle, setSelectedVehicle] = useState(initialVehicle);
   const [submitting, setSubmitting] = useState(false);
   const submissionKey = useRef<string | null>(null);
   const inFlight = useRef(false);
@@ -191,6 +65,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    setReference("");
     const values = new FormData(form);
     if (inFlight.current) return;
     const key = submissionKey.current ?? crypto.randomUUID();
@@ -222,14 +97,33 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
     inFlight.current = true;
     setSubmitting(true);
     setStatus("Sending…");
-    submitRideEnquiry({ data: parsed.data })
+    const categoryCode = regularCode(String(values.get("vehicle") ?? ""));
+    let request: Promise<{ ok: boolean; reference: string }>;
+    if (categoryCode) {
+      const { vehiclePreference: _preference, ...trip } = parsed.data;
+      const regular = regularRideSchema.safeParse({
+        ...trip,
+        categoryCode,
+        luggageDetails: String(values.get("luggage") ?? ""),
+      });
+      if (!regular.success) {
+        inFlight.current = false;
+        setSubmitting(false);
+        setStatus("Please describe your luggage needs, including no luggage if applicable.");
+        return;
+      }
+      request = submitRegularRide({ data: regular.data });
+    } else {
+      request = submitRideEnquiry({ data: parsed.data });
+    }
+    request
       .then((r) => {
         if (!r.ok || !r.reference) throw new Error("Missing confirmation");
-        setStatus(
-          `Request received (ref ${r.reference}). Your enquiry is awaiting review; your ride is not yet confirmed.`,
-        );
+        setStatus("");
+        setReference(r.reference);
         submissionKey.current = null;
         form.reset();
+        setSelectedVehicle(initialVehicle);
       })
       .catch(() =>
         setStatus("Something went wrong. Please check your details or call us directly."),
@@ -254,6 +148,23 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
         className="hidden"
       />
       <div className="form-grid">
+        <label className="form-span-two">
+          <span>Pickup location</span>
+          <input name="pickup" placeholder="Address, airport, or landmark" required />
+        </label>
+        <label className="form-span-two">
+          <span>Drop-off location</span>
+          <input name="dropoff" placeholder="Address, airport, or landmark" required />
+        </label>
+        <label>
+          <span>Date</span>
+          <input name="date" type="date" required />
+        </label>
+        <label>
+          <span>Pickup time</span>
+          <input name="time" type="time" required />
+        </label>
+
         <label>
           <span>Full name</span>
           <input name="name" autoComplete="name" placeholder="Your name" required />
@@ -293,22 +204,6 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
             <option>Other</option>
           </select>
         </label>
-        <label className="form-span-two">
-          <span>Pickup location</span>
-          <input name="pickup" placeholder="Address, airport, or landmark" required />
-        </label>
-        <label className="form-span-two">
-          <span>Drop-off location</span>
-          <input name="dropoff" placeholder="Address, airport, or landmark" required />
-        </label>
-        <label>
-          <span>Date</span>
-          <input name="date" type="date" required />
-        </label>
-        <label>
-          <span>Pickup time</span>
-          <input name="time" type="time" required />
-        </label>
         <label>
           <span>Passengers</span>
           <input
@@ -322,14 +217,40 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
         </label>
         <label>
           <span>Vehicle preference</span>
-          <select name="vehicle" defaultValue="">
+          <select
+            name="vehicle"
+            defaultValue={initialVehicle}
+            onChange={(event) => setSelectedVehicle(event.target.value)}
+          >
             <option value="">No preference</option>
-            <option>Luxury sedan</option>
-            <option>Luxury SUV</option>
-            <option>Executive van</option>
-            <option>Premium limousine</option>
+            <optgroup label="Regular Fleet — category request">
+              {REGULAR_FLEET.map((entry) => (
+                <option key={entry.name}>{entry.name}</option>
+              ))}
+            </optgroup>
+            <optgroup label="Special Fleet — availability and approval required">
+              {VEHICLE_MODELS.map((model) => (
+                <option key={model.name}>{model.name}</option>
+              ))}
+            </optgroup>
           </select>
         </label>
+        {regularCode(selectedVehicle) && (
+          <label className="form-span-two">
+            <span>Luggage details</span>
+            <input
+              name="luggage"
+              required
+              maxLength={500}
+              placeholder="Describe bags, or enter no luggage"
+            />
+            <small>
+              Regular ride request · awaiting admin review. Final amount and category availability
+              require approval. Payment is not requested during booking. Times are Chicago local
+              time.
+            </small>
+          </label>
+        )}
         <label className="form-span-two">
           <span>Additional notes</span>
           <textarea name="notes" rows={3} placeholder="Luggage, stops, or other details" />
@@ -345,7 +266,9 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
             onClick={(event) => {
               event.currentTarget.form?.reset();
               submissionKey.current = null;
+              setSelectedVehicle(initialVehicle);
               setStatus("");
+              setReference("");
             }}
           >
             Start a new enquiry
@@ -355,6 +278,7 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
           Sent securely to the Skyrun team. Availability and ride details are confirmed directly.
         </p>
       </div>
+      {reference && <EnquiryConfirmation reference={reference} />}
       {status && (
         <p className="form-status" role="status">
           {status}
@@ -365,652 +289,270 @@ export function BookingForm({ compact = false }: { compact?: boolean }) {
 }
 
 export function HomePage() {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const fleetTrack = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const timer = window.setInterval(
-      () => setActiveSlide((current) => (current + 1) % slides.length),
-      7000,
-    );
-    return () => window.clearInterval(timer);
-  }, []);
-
-  function moveFleet(direction: -1 | 1) {
-    fleetTrack.current?.scrollBy({ left: direction * 440, behavior: "smooth" });
-  }
-
+  const services = [
+    {
+      title: "Airport transfers",
+      copy: "Your next arrival, thoughtfully arranged. O’Hare, Midway and your onward journey.",
+      to: "/airport-transfer",
+      Icon: Plane,
+      image: "/vehicle-images/cadillac-escalade-esv-2.jpg",
+    },
+    {
+      title: "Corporate travel",
+      copy: "From the first meeting to the last stop. Share your itinerary with our team.",
+      to: "/corporate-transportation",
+      Icon: BriefcaseBusiness,
+      image: "/vehicle-images/mercedes-benz-sprinter-executive-van.jpg",
+    },
+    {
+      title: "Hourly & city rides",
+      copy: "One destination or a day of possibilities. Plan a journey around your schedule.",
+      to: "/book",
+      Icon: Clock3,
+      image: "/vehicle-images/chevrolet-suburban.jpg",
+    },
+    {
+      title: "Special occasions",
+      copy: "Make the arrival part of the occasion. Explore a vehicle for your celebration.",
+      to: "/occasions",
+      Icon: MapPin,
+      image: "/vehicle-images/rolls-royce-ghost.jpg",
+    },
+  ];
   return (
-    <main>
+    <div className="public-site public-home">
       <SiteHeader overlay />
-
-      <section className="hero" id="home" aria-label="Skyrun Limo Chicago">
-        <div className="hero-slides" aria-hidden="true">
-          {slides.map((slide, index) => (
-            <img
-              className={`hero-slide${activeSlide === index ? " hero-slide-active" : ""}`}
-              src={slide.image}
-              alt=""
-              key={slide.label}
-              width={index === 0 ? 1920 : index === 3 ? 1808 : 1600}
-              height={index === 0 ? 1200 : index === 3 ? 1008 : 1104}
-              fetchPriority={index === 0 ? "high" : "auto"}
-            />
-          ))}
-        </div>
-        <div className="hero-shade" />
-        <div className="hero-copy page-width">
-          <p className="eyebrow eyebrow-gold">Private chauffeur service · Chicago, Illinois</p>
-          <h1>
-            Elevate
-            <br />
-            every journey.
-          </h1>
-          <p className="hero-description">
-            Premium chauffeur-driven transportation across Chicago.
-          </p>
-          <div className="hero-actions">
-            <Button asChild className="button-gold button-large">
-              <a href="#book">
-                Book your ride <ArrowUpRight aria-hidden="true" />
-              </a>
-            </Button>
-            <a className="text-link text-link-light" href="#fleet">
-              Explore our fleet <ArrowRight aria-hidden="true" />
-            </a>
-          </div>
-        </div>
-        <div className="hero-bottom page-width">
-          <a className="scroll-cue" href="#intro">
-            <span className="scroll-cue-icon">
-              <ArrowDown aria-hidden="true" />
-            </span>{" "}
-            Scroll to explore
-          </a>
-          <div className="slide-control" aria-label="Hero image selector">
-            <span className="slide-count">
-              0{activeSlide + 1} <i /> 0{slides.length}
-            </span>
-            <div className="slide-dots">
-              {slides.map((slide, index) => (
-                <button
-                  key={slide.label}
-                  type="button"
-                  aria-label={`Show image: ${slide.label}`}
-                  aria-pressed={activeSlide === index}
-                  className={activeSlide === index ? "slide-dot slide-dot-active" : "slide-dot"}
-                  onClick={() => setActiveSlide(index)}
-                />
-              ))}
-            </div>
-          </div>
-          <p className="hero-location">
-            <MapPin aria-hidden="true" /> Chicago, Illinois
-          </p>
-        </div>
-      </section>
-
-      <section className="trust-strip" aria-label="Skyrun service highlights">
-        <div className="trust-inner page-width">
-          <span>
-            <ShieldCheck aria-hidden="true" /> Professional chauffeurs
-          </span>
-          <span>
-            <Sparkles aria-hidden="true" /> Premium vehicles
-          </span>
-          <span>
-            <Clock3 aria-hidden="true" /> Personalized service
-          </span>
-          <span>
-            <Plane aria-hidden="true" /> Airport & corporate travel
-          </span>
-          <span>
-            <MapPin aria-hidden="true" /> Chicago transportation
-          </span>
-        </div>
-      </section>
-
-      <section className="intro-section section-light" id="intro">
-        <div className="intro-layout page-width">
-          <div className="intro-photo-wrap">
-            <img
-              src={executiveImage}
-              alt="Chauffeur preparing a black sedan outside a Chicago hotel"
-              width={1600}
-              height={1104}
-              loading="lazy"
-            />
-            <span className="image-caption">A more considered way to move through the city</span>
-            <span className="photo-index">SKYRUN · CHICAGO</span>
-          </div>
-          <div className="intro-copy">
-            <p className="eyebrow">A better way to arrive</p>
-            <h2>
-              More than a ride.
-              <br />
-              <em>A better way to arrive.</em>
-            </h2>
-            <span className="gold-rule" />
-            <p>
-              Skyrun Limo provides private chauffeur-driven transportation shaped around comfort,
-              professionalism, and the details of your journey.
-            </p>
-            <p className="intro-small">
-              From a ride across town to a carefully timed airport transfer, start with a request
-              and let us know what matters along the way.
-            </p>
-            <a className="text-link" href="#about">
-              Discover Skyrun <ArrowRight aria-hidden="true" />
-            </a>
-          </div>
-          <div className="intro-stamp" aria-hidden="true">
-            <span>EST.</span>
-            <strong>CHI</strong>
-            <span>ILLINOIS</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="services-section section-dark" id="services">
-        <div className="page-width">
-          <div className="section-heading section-heading-light">
-            <div>
-              <p className="eyebrow eyebrow-gold">The journey, your way</p>
-              <h2>
-                Transportation,
+      <main id="main-content">
+        <section className="mobility-hero">
+          <HeroCarousel />
+          <div className="journey-shade" />
+          <div className="page-width mobility-hero-grid">
+            <div className="journey-intro">
+              <p className="hero-eyebrow">
+                <span /> PRIVATE CHAUFFEUR SERVICE · CHICAGO
+              </p>
+              <h1>
+                Exceptional
                 <br />
-                <em>designed around you.</em>
-              </h2>
-            </div>
-            <p>
-              From airport transfers to the next important meeting, make the ride part of the plan.
-            </p>
-          </div>
-          <div className="service-mosaic">
-            {services.map((service, index) => (
-              <a
-                className={`service-tile service-tile-${index + 1}`}
-                href={`#${service.anchor}`}
-                key={service.number}
-              >
-                <img
-                  src={service.image}
-                  alt={service.imageAlt}
-                  width={1600}
-                  height={1008}
-                  loading="lazy"
-                />
-                <span className="service-overlay" />
-                <span className="service-tile-copy">
-                  <span className="service-kicker">{service.number}</span>
-                  <strong>{service.title}</strong>
-                  <span className="service-description">{service.description}</span>
+                <em>Journeys.</em>
+                <br />
+                Distinguished Arrivals.
+              </h1>
+              <span className="editorial-rule" />
+              <p className="hero-summary">
+                Premium chauffeur transportation for airport arrivals, business travel and special
+                occasions across Chicago and surrounding suburbs.
+              </p>
+              <div className="hero-promises">
+                <span>
+                  <Plane size={16} /> Airport transfers
                 </span>
-                <span className="service-arrow">
-                  <ArrowUpRight aria-hidden="true" />
+                <span>
+                  <BriefcaseBusiness size={16} /> Business travel
                 </span>
-              </a>
-            ))}
-          </div>
-          <div className="service-more-row">
-            <p>One way · Round trip · Hourly · As you need</p>
-            <a className="text-link text-link-light" href="#book">
-              Tell us about your journey <ArrowRight aria-hidden="true" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="airport-section section-light" id="airport">
-        <div className="airport-layout page-width">
-          <div className="airport-copy">
-            <p className="eyebrow">
-              <Plane aria-hidden="true" /> Arrive with ease
-            </p>
-            <h2>
-              From the terminal
-              <br />
-              <em>to your destination.</em>
-            </h2>
-            <span className="gold-rule" />
-            <p>
-              Set up your airport ride in advance. Share your arrival or departure details, pickup
-              location, and luggage needs so Skyrun can coordinate the journey with you.
-            </p>
-            <ul className="airport-points">
-              <li>
-                <Check aria-hidden="true" /> Pickup and drop-off requests
-              </li>
-              <li>
-                <Check aria-hidden="true" /> Professional chauffeur service
-              </li>
-              <li>
-                <Check aria-hidden="true" /> Comfortable, luggage-aware travel
-              </li>
-              <li>
-                <Check aria-hidden="true" /> O'Hare and Midway requests welcome
-              </li>
-            </ul>
-            <Button asChild className="button-outline">
-              <a href="#book">
-                Request an airport ride <ArrowUpRight aria-hidden="true" />
-              </a>
-            </Button>
-          </div>
-          <div className="airport-image-wrap">
-            <img
-              src={airportImage}
-              alt="Black executive sedan outside a glass airport terminal"
-              width={1600}
-              height={1104}
-              loading="lazy"
-            />
-            <div className="airport-image-note">
-              <span>Chicago airport travel</span>
-              <strong>On your schedule.</strong>
-            </div>
-            <span className="airport-side-label">SKYRUN · AIRPORT TRANSFERS</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="experience-band" aria-label="The Skyrun experience">
-        <div className="experience-image" />
-        <div className="experience-content page-width">
-          <p className="eyebrow eyebrow-gold">The Skyrun experience</p>
-          <h2>
-            Comfort in motion.
-            <br />
-            <em>Confidence at every stop.</em>
-          </h2>
-          <div className="experience-values">
-            <div>
-              <span>01</span>
-              <strong>Professional service</strong>
-              <p>A polished experience shaped around courtesy and care.</p>
-            </div>
-            <div>
-              <span>02</span>
-              <strong>Comfort, considered</strong>
-              <p>Space to settle in, focus, or simply enjoy the journey.</p>
-            </div>
-            <div>
-              <span>03</span>
-              <strong>Your schedule</strong>
-              <p>Share the details of your day and the timing that matters.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="fleet-section section-dark" id="fleet">
-        <div className="page-width">
-          <div className="fleet-topline">
-            <div>
-              <p className="eyebrow eyebrow-gold">A considered ride</p>
-              <h2>
-                Our fleet.
-                <br />
-                <em>Your point of view.</em>
-              </h2>
-            </div>
-            <p>
-              Vehicle availability varies. Tell us about your party, luggage, and plans so we can
-              discuss the right option.
-            </p>
-          </div>
-          <div className="fleet-controls">
-            <span>Vehicle preferences</span>
-            <div>
-              <button type="button" aria-label="Previous vehicle" onClick={() => moveFleet(-1)}>
-                <ChevronLeft />
-              </button>
-              <button type="button" aria-label="Next vehicle" onClick={() => moveFleet(1)}>
-                <ChevronRight />
-              </button>
-            </div>
-          </div>
-          <div className="fleet-track" ref={fleetTrack}>
-            {fleet.map((v, i) => (
-              <article className="fleet-slide fleet-slide-wide" key={v.name}>
-                <img src={v.image} alt={v.alt} width={1600} height={1008} loading="lazy" />
-                <div className="fleet-slide-caption">
-                  <span>
-                    0{i + 1} / {v.category}
-                  </span>
-                  <h3>{v.name}</h3>
-                  <p>{v.description}</p>
-                  <a className="text-link text-link-light" href="#book">
-                    Request this vehicle <ArrowUpRight aria-hidden="true" />
-                  </a>
-                </div>
-              </article>
-            ))}
-          </div>
-          <p className="fleet-footnote">
-            Illustrative vehicle categories only. Specific vehicles and capacity are confirmed
-            directly with Skyrun.
-          </p>
-        </div>
-      </section>
-
-      <section className="corporate-section section-light" id="corporate">
-        <div className="corporate-layout page-width">
-          <div className="corporate-photo">
-            <img
-              src={executiveImage}
-              alt="Executive chauffeur service outside a downtown Chicago hotel"
-              width={1600}
-              height={1104}
-              loading="lazy"
-            />
-            <span>Business travel, thoughtfully arranged</span>
-          </div>
-          <div className="corporate-copy">
-            <p className="eyebrow">
-              <BriefcaseBusiness aria-hidden="true" /> For the work in between
-            </p>
-            <h2>
-              Business travel,
-              <br />
-              <em>without the distraction.</em>
-            </h2>
-            <span className="gold-rule" />
-            <p>
-              Make room for the meeting, the client, and everything your day requires. Request
-              private transportation for executive travel, business meetings, and corporate events
-              in Chicago.
-            </p>
-            <a className="text-link" href="#book">
-              Request corporate transportation <ArrowRight aria-hidden="true" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="occasion-section section-dark" id="occasions">
-        <div className="occasion-photo">
-          <img
-            src={limoImage}
-            alt="Black stretch limousine outside an elegant Chicago venue at night"
-            width={1600}
-            height={1008}
-            loading="lazy"
-          />
-        </div>
-        <div className="occasion-copy page-width">
-          <p className="eyebrow eyebrow-gold">Make an entrance</p>
-          <h2>
-            Make the arrival
-            <br />
-            <em>part of the moment.</em>
-          </h2>
-          <p>
-            For a celebration, an evening out, or another occasion worth making memorable, share
-            your plans and request a ride that fits.
-          </p>
-          <div className="occasion-tags">
-            <span>Weddings</span>
-            <i /> <span>Celebrations</span>
-            <i /> <span>Events</span>
-            <i /> <span>Evenings</span>
-          </div>
-          <a className="text-link text-link-light" href="#book">
-            Plan your ride <ArrowRight aria-hidden="true" />
-          </a>
-        </div>
-      </section>
-
-      <section className="chicago-section" id="chicago">
-        <img
-          src={chicagoImage}
-          alt="Chicago skyline and river at golden hour"
-          width={1808}
-          height={1008}
-          loading="lazy"
-        />
-        <div className="chicago-shade" />
-        <div className="chicago-copy page-width">
-          <p className="eyebrow eyebrow-gold">
-            <MapPin aria-hidden="true" /> Chicago, Illinois
-          </p>
-          <h2>
-            Chicago,
-            <br />
-            <em>your journey starts here.</em>
-          </h2>
-          <p>
-            From city streets to airport terminals and destinations beyond, tell us where you need
-            to go.
-          </p>
-          <a className="text-link text-link-light" href="#book">
-            Request your Chicago ride <ArrowRight aria-hidden="true" />
-          </a>
-        </div>
-        <span className="chicago-coordinates">
-          O'Hare · Midway · Downtown Chicago · Destinations beyond
-        </span>
-      </section>
-
-      <section className="story-section section-light" aria-label="Chicago, in motion">
-        <div className="story-header page-width">
-          <div>
-            <p className="eyebrow">City, considered</p>
-            <h2>Chicago, in motion.</h2>
-          </div>
-          <span>SKYRUN · FIELD NOTES</span>
-        </div>
-        <div className="story-strip">
-          <figure>
-            <img
-              src={chicagoImage}
-              alt="Downtown Chicago skyline in evening light"
-              width={1808}
-              height={1008}
-              loading="lazy"
-            />
-            <figcaption>01 / The city</figcaption>
-          </figure>
-          <figure>
-            <img
-              src={heroImage}
-              alt="Executive SUV arriving downtown in the evening"
-              width={1920}
-              height={1200}
-              loading="lazy"
-            />
-            <figcaption>02 / The arrival</figcaption>
-          </figure>
-          <figure>
-            <img
-              src={airportImage}
-              alt="Airport pickup with an executive sedan"
-              width={1600}
-              height={1104}
-              loading="lazy"
-            />
-            <figcaption>03 / The departure</figcaption>
-          </figure>
-          <figure>
-            <img
-              src={executiveImage}
-              alt="Chauffeur opening a car door at a city hotel"
-              width={1600}
-              height={1104}
-              loading="lazy"
-            />
-            <figcaption>04 / The detail</figcaption>
-          </figure>
-        </div>
-      </section>
-
-      <section className="reviews-section section-dark" id="how-it-works">
-        <div className="page-width">
-          <div className="section-heading section-heading-light">
-            <div>
-              <p className="eyebrow eyebrow-gold">How booking works</p>
-              <h2>
-                Three steps.
-                <br />
-                <em>One smooth ride.</em>
-              </h2>
-            </div>
-            <p>Clear, direct and personal — every ride is confirmed by the Skyrun team.</p>
-          </div>
-          <div className="steps-grid">
-            {[
-              [
-                "01",
-                "Send your request",
-                "Use the form or call Vrund or Nisharg with your pickup, destination, date and passengers.",
-              ],
-              [
-                "02",
-                "We confirm directly",
-                "Skyrun replies to confirm the vehicle, timing and price for your journey.",
-              ],
-              [
-                "03",
-                "Your chauffeur arrives",
-                "Settle in. Airport, office, hotel or venue — the details are handled.",
-              ],
-            ].map(([n, t, d]) => (
-              <div className="step-card" key={n}>
-                <span>{n}</span>
-                <strong>{t}</strong>
-                <p>{d}</p>
+                <span>
+                  <MapPin size={16} /> Chicago & suburbs
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="about-section section-light" id="about">
-        <div className="about-layout page-width">
-          <div className="about-mark">
-            <Brand />
-            <span className="about-tagline">ELEVATE EVERY JOURNEY</span>
-          </div>
-          <div className="about-copy">
-            <p className="eyebrow">The people behind the journey</p>
-            <h2>
-              Personal service.
-              <br />
-              <em>A Chicago point of view.</em>
-            </h2>
-            <p>
-              Skyrun Limo is a Chicago, Illinois transportation company built around one simple
-              idea: the ride should feel as considered as the destination. Tell us what you need,
-              and our team will help coordinate the details.
-            </p>
-            <p className="about-footnote">
-              Service, timing, and vehicle availability are confirmed when you contact Skyrun.
-            </p>
-            <div className="contact-people">
-              {contacts.map((contact) => (
-                <a href={`tel:${contact.href}`} key={contact.phone}>
-                  <span>{contact.name}</span>
-                  <strong>{contact.phone}</strong>
-                  <ArrowUpRight aria-hidden="true" />
-                </a>
-              ))}
+            </div>
+            <div className="journey-panel">
+              <p className="mobility-kicker">EVERY JOURNEY STARTS SOMEWHERE</p>
+              <h2>
+                Where will you
+                <br />
+                go next?
+              </h2>
+              <div className="journey-options">
+                {services.map(({ title, to, Icon }) => (
+                  <Link to={to} key={title}>
+                    <span className="journey-option-icon">
+                      <Icon size={20} />
+                    </span>
+                    <span>{title}</span>
+                    <ArrowUpRight size={17} aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+              <Link className="primary-action" to="/book">
+                Request your ride <ArrowRight size={18} aria-hidden="true" />
+              </Link>
+              <p className="journey-panel-note">
+                A personal enquiry. Details confirmed by our team.
+              </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="faq-section section-light" id="faq">
-        <div className="faq-layout page-width">
-          <div>
-            <p className="eyebrow">A few details</p>
-            <h2>
-              Good to
-              <br />
-              <em>know.</em>
-            </h2>
-            <p>Still have a question? Reach out and we'll help with the details.</p>
-            <a className="text-link" href="#contact">
-              Contact Skyrun <ArrowRight aria-hidden="true" />
+          <div className="page-width hero-bottom">
+            <span>YOUR CITY. YOUR OCCASION. YOUR SKYRUN.</span>
+            <a href="#services">
+              Explore the experience <ArrowRight size={16} />
             </a>
+          </div>
+        </section>
+        <section className="page-width mobility-section experience-section" id="services">
+          <div className="centered-title">
+            <p className="mobility-kicker">THOUGHTFUL TRAVEL, FROM THE START</p>
+            <h2>
+              A little more care.
+              <br />A different kind of journey.
+            </h2>
+            <span className="editorial-rule" />
+            <p>
+              Private transportation for the plans that matter, across Chicago and surrounding
+              suburbs.
+            </p>
+          </div>
+          <div className="mobility-services">
+            {services.map(({ title, copy, to, Icon, image }) => (
+              <Link to={to} key={title} className="experience-card">
+                <div className="experience-photo">
+                  <img src={image} alt="" loading="lazy" width="640" height="480" />
+                  <span>
+                    <Icon size={21} />
+                  </span>
+                </div>
+                <div className="experience-card-body">
+                  <h3>{title}</h3>
+                  <p>{copy}</p>
+                  <span className="service-card-link">
+                    Explore service <ArrowUpRight size={17} />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+        <section className="personal-service">
+          <div className="page-width personal-service-inner">
+            <div>
+              <p className="mobility-kicker">THE SKYRUN APPROACH</p>
+              <h2>
+                Personal service.
+                <br />
+                From people you can reach.
+              </h2>
+            </div>
+            <div>
+              <p>
+                Tell us where you’re headed and what matters for your trip. Speak directly with the
+                Skyrun team about your route, vehicle preference and arrangements.
+              </p>
+              <a href="tel:+12246192024" className="plain-link">
+                Talk to Vrund · 224-619-2024 <ArrowUpRight size={17} />
+              </a>
+            </div>
+          </div>
+        </section>
+        <PublicFleet preview />
+        <section className="page-width mobility-section destination-grid">
+          <figure className="editorial-photo">
+            <img
+              src="/vehicle-images/cadillac-escalade-esv-2.jpg"
+              alt="Cadillac Escalade ESV exterior"
+              loading="lazy"
+              width="515"
+              height="388"
+            />
+            <figcaption>FOR THE ARRIVAL. AND EVERYTHING AFTER.</figcaption>
+          </figure>
+          <div>
+            <p className="mobility-kicker">AIRPORT & BUSINESS TRAVEL</p>
+            <h2>
+              From touchdown
+              <br />
+              to what’s next.
+            </h2>
+            <span className="editorial-rule" />
+            <p>
+              Plan an O’Hare or Midway transfer, a client pickup or a day of meetings. Share your
+              flight details, itinerary and luggage needs. We’ll confirm the arrangements with you.
+            </p>
+            <div className="airport-tags">
+              <span>O’Hare · ORD</span>
+              <span>Midway · MDW</span>
+              <span>Chicago & suburbs</span>
+            </div>
+            <Link className="primary-action" to="/airport-transfer">
+              Plan an airport ride <ArrowUpRight size={18} />
+            </Link>
+          </div>
+        </section>
+        <section className="about-journey">
+          <img src={chicagoImage} alt="" loading="lazy" />
+          <div className="page-width">
+            <p className="mobility-kicker">CHICAGO. OUR POINT OF DEPARTURE.</p>
+            <h2>
+              Meet the people
+              <br />
+              behind your journey.
+            </h2>
+            <p>
+              Skyrun Limo LLC is led by Vrund Patel and Nisharg Patel. From everyday plans to
+              special occasions, start a conversation with the people arranging your ride.
+            </p>
+            <Link className="secondary-action" to="/about">
+              Get to know Skyrun <ArrowUpRight size={18} />
+            </Link>
+          </div>
+        </section>
+        <section className="page-width mobility-section home-faq">
+          <div>
+            <p className="mobility-kicker">BEFORE YOU GO</p>
+            <h2>
+              A few things
+              <br />
+              worth knowing.
+            </h2>
+            <Link to="/faq" className="plain-link">
+              All questions <ArrowUpRight size={17} />
+            </Link>
           </div>
           <div className="faq-list">
-            {faqs.map((faq) => (
+            {faqs.slice(0, 4).map((faq) => (
               <details key={faq.question}>
                 <summary>
                   {faq.question}
-                  <ChevronDown aria-hidden="true" />
+                  <span aria-hidden="true">+</span>
                 </summary>
                 <p>{faq.answer}</p>
               </details>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="booking-section" id="book">
-        <div className="booking-heading page-width">
-          <p className="eyebrow eyebrow-gold">
-            <CalendarDays aria-hidden="true" /> Your next journey
-          </p>
-          <h2>
-            Ready when
-            <br />
-            <em>you are.</em>
-          </h2>
-          <p>Share a few details and prepare a ride request for the Skyrun team.</p>
-        </div>
-        <div className="booking-form-wrap page-width">
-          <BookingForm />
-        </div>
-      </section>
-
-      <section className="contact-section section-light" id="contact">
-        <div className="contact-layout page-width">
-          <div>
-            <p className="eyebrow">Let's talk details</p>
-            <h2>
-              Contact
-              <br />
-              <em>Skyrun.</em>
-            </h2>
-            <p>
-              For a booking request or a question about your journey, call or email the Skyrun team.
-            </p>
-            <a className="email-link" href="mailto:skyrunlimo2428@gmail.com">
-              skyrunlimo2428@gmail.com <ArrowUpRight aria-hidden="true" />
-            </a>
-          </div>
-          <div className="contact-card-list">
-            {contacts.map((contact) => (
-              <a className="contact-card" href={`tel:${contact.href}`} key={contact.phone}>
-                <span>{contact.name}</span>
-                <strong>{contact.phone}</strong>
-                <ArrowUpRight aria-hidden="true" />
+        </section>
+        <section className="request-section" id="ride-request">
+          <div className="page-width mobility-section request-layout">
+            <div>
+              <p className="mobility-kicker">LET’S PLAN SOMETHING</p>
+              <h2>
+                Tell us where.
+                <br />
+                We’ll take it
+                <br />
+                from here.
+              </h2>
+              <span className="editorial-rule" />
+              <p>
+                Your route, your timing, your preferences. Send an enquiry and our team will be in
+                touch to confirm your quote and arrangements.
+              </p>
+              <a className="plain-link" href="tel:+12246192024">
+                Prefer a conversation? Call us <ArrowUpRight size={17} />
               </a>
-            ))}
-            <div className="contact-card contact-card-static">
-              <span>Location</span>
-              <strong>Chicago, Illinois</strong>
-              <MapPin aria-hidden="true" />
+              <div className="enquiry-steps">
+                <span>01 · Share your plans</span>
+                <span>02 · Receive your quote</span>
+                <span>03 · Confirm with our team</span>
+              </div>
+            </div>
+            <div className="request-card">
+              <p className="mobility-kicker">YOUR NEXT JOURNEY</p>
+              <h3>Request a ride</h3>
+              <BookingForm />
             </div>
           </div>
-        </div>
-      </section>
-
+        </section>
+      </main>
       <SiteFooter />
-
-      <div className="mobile-book-bar">
-        <a href="tel:+12246192024">
-          <span>Call</span>
-          <strong>Skyrun</strong>
-        </a>
-        <Button asChild className="button-gold">
-          <a href="#book">
-            Book your ride <ArrowUpRight aria-hidden="true" />
-          </a>
-        </Button>
-      </div>
       <ChatWidget />
-    </main>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./public-site.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -707,3 +708,4 @@ body { min-width: 320px; }
   body:has(.financial-print) .admin main { max-width: none; padding: 0 !important; }
   .financial-print { margin: 0 !important; padding: 0 !important; page: skyrun-document; }
 }
+

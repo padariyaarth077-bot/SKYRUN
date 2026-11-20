@@ -67,15 +67,15 @@ it("shows clipboard failure honestly", async () => {
 });
 it("public catalogue shows photos/models without internal quantities or customer records", () => {
   render(<VehicleCatalogue />);
-  expect(screen.getAllByRole("img")).toHaveLength(14);
+  expect(screen.getAllByRole("img")).toHaveLength(17);
   expect(screen.getByRole("heading", { name: "Cadillac Escalade ESV" })).toBeInTheDocument();
   expect(screen.queryByText(/Quantity not recorded/)).toBeNull();
-  expect(screen.getByText(/availability are confirmed/)).toBeInTheDocument();
+  expect(screen.getByText(/Availability and capacity confirmed by our team/)).toBeInTheDocument();
 });
 it("searches model names and distinguishes no results", () => {
   const { rerender } = render(<VehicleCatalogue search="Cadillac" />);
   expect(screen.getAllByRole("img")).toHaveLength(2);
   rerender(<VehicleCatalogue search="no such model" />);
-  expect(screen.getByText("No models match this search.")).toBeInTheDocument();
+  expect(screen.getByText("No vehicles match this search.")).toBeInTheDocument();
   expect(screen.queryByRole("img")).toBeNull();
 });

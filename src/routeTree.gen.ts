@@ -17,14 +17,18 @@ import { Route as AirportTransferRouteImport } from './routes/airport-transfer'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as CatalogueRouteImport } from './routes/catalogue'
+import { Route as ChauffeurServicePolicyRouteImport } from './routes/chauffeur-service-policy'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as CorporateRouteImport } from './routes/corporate'
 import { Route as CorporateTransportationRouteImport } from './routes/corporate-transportation'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FleetRouteImport } from './routes/fleet'
 import { Route as J1s30MRp_geRZtdPP860RwRouteImport } from './routes/j1s30MRp_geRZtdPP860Rw'
 import { Route as OccasionsRouteImport } from './routes/occasions'
+import { Route as PoliciesRouteImport } from './routes/policies'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as ServiceAreasRouteImport } from './routes/service-areas'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SpecialOccasionsRouteImport } from './routes/special-occasions'
@@ -87,9 +91,19 @@ const CatalogueRoute = CatalogueRouteImport.update({
   path: '/catalogue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChauffeurServicePolicyRoute = ChauffeurServicePolicyRouteImport.update({
+  id: '/chauffeur-service-policy',
+  path: '/chauffeur-service-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiePolicyRoute = CookiePolicyRouteImport.update({
+  id: '/cookie-policy',
+  path: '/cookie-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CorporateRoute = CorporateRouteImport.update({
@@ -122,9 +136,19 @@ const OccasionsRoute = OccasionsRouteImport.update({
   path: '/occasions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PoliciesRoute = PoliciesRouteImport.update({
+  id: '/policies',
+  path: '/policies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServiceAreasRoute = ServiceAreasRouteImport.update({
@@ -261,14 +285,18 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
   '/catalogue': typeof CatalogueRoute
+  '/chauffeur-service-policy': typeof ChauffeurServicePolicyRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
   '/corporate': typeof CorporateRoute
   '/corporate-transportation': typeof CorporateTransportationRoute
   '/faq': typeof FaqRoute
   '/fleet': typeof FleetRoute
   '/j1s30MRp_geRZtdPP860Rw': typeof J1s30MRp_geRZtdPP860RwRouteWithChildren
   '/occasions': typeof OccasionsRoute
+  '/policies': typeof PoliciesRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/service-areas': typeof ServiceAreasRoute
   '/services': typeof ServicesRoute
   '/special-occasions': typeof SpecialOccasionsRoute
@@ -300,13 +328,17 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
   '/catalogue': typeof CatalogueRoute
+  '/chauffeur-service-policy': typeof ChauffeurServicePolicyRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
   '/corporate': typeof CorporateRoute
   '/corporate-transportation': typeof CorporateTransportationRoute
   '/faq': typeof FaqRoute
   '/fleet': typeof FleetRoute
   '/occasions': typeof OccasionsRoute
+  '/policies': typeof PoliciesRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/service-areas': typeof ServiceAreasRoute
   '/services': typeof ServicesRoute
   '/special-occasions': typeof SpecialOccasionsRoute
@@ -340,14 +372,18 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
   '/catalogue': typeof CatalogueRoute
+  '/chauffeur-service-policy': typeof ChauffeurServicePolicyRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
   '/corporate': typeof CorporateRoute
   '/corporate-transportation': typeof CorporateTransportationRoute
   '/faq': typeof FaqRoute
   '/fleet': typeof FleetRoute
   '/j1s30MRp_geRZtdPP860Rw': typeof J1s30MRp_geRZtdPP860RwRouteWithChildren
   '/occasions': typeof OccasionsRoute
+  '/policies': typeof PoliciesRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/service-areas': typeof ServiceAreasRoute
   '/services': typeof ServicesRoute
   '/special-occasions': typeof SpecialOccasionsRoute
@@ -381,14 +417,18 @@ export interface FileRouteTypes {
     | '/auth'
     | '/book'
     | '/catalogue'
+    | '/chauffeur-service-policy'
     | '/contact'
+    | '/cookie-policy'
     | '/corporate'
     | '/corporate-transportation'
     | '/faq'
     | '/fleet'
     | '/j1s30MRp_geRZtdPP860Rw'
     | '/occasions'
+    | '/policies'
     | '/privacy-policy'
+    | '/refund-policy'
     | '/service-areas'
     | '/services'
     | '/special-occasions'
@@ -420,13 +460,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/book'
     | '/catalogue'
+    | '/chauffeur-service-policy'
     | '/contact'
+    | '/cookie-policy'
     | '/corporate'
     | '/corporate-transportation'
     | '/faq'
     | '/fleet'
     | '/occasions'
+    | '/policies'
     | '/privacy-policy'
+    | '/refund-policy'
     | '/service-areas'
     | '/services'
     | '/special-occasions'
@@ -459,14 +503,18 @@ export interface FileRouteTypes {
     | '/auth'
     | '/book'
     | '/catalogue'
+    | '/chauffeur-service-policy'
     | '/contact'
+    | '/cookie-policy'
     | '/corporate'
     | '/corporate-transportation'
     | '/faq'
     | '/fleet'
     | '/j1s30MRp_geRZtdPP860Rw'
     | '/occasions'
+    | '/policies'
     | '/privacy-policy'
+    | '/refund-policy'
     | '/service-areas'
     | '/services'
     | '/special-occasions'
@@ -500,14 +548,18 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BookRoute: typeof BookRoute
   CatalogueRoute: typeof CatalogueRoute
+  ChauffeurServicePolicyRoute: typeof ChauffeurServicePolicyRoute
   ContactRoute: typeof ContactRoute
+  CookiePolicyRoute: typeof CookiePolicyRoute
   CorporateRoute: typeof CorporateRoute
   CorporateTransportationRoute: typeof CorporateTransportationRoute
   FaqRoute: typeof FaqRoute
   FleetRoute: typeof FleetRoute
   J1s30MRp_geRZtdPP860RwRoute: typeof J1s30MRp_geRZtdPP860RwRouteWithChildren
   OccasionsRoute: typeof OccasionsRoute
+  PoliciesRoute: typeof PoliciesRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
+  RefundPolicyRoute: typeof RefundPolicyRoute
   ServiceAreasRoute: typeof ServiceAreasRoute
   ServicesRoute: typeof ServicesRoute
   SpecialOccasionsRoute: typeof SpecialOccasionsRoute
@@ -576,11 +628,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CatalogueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chauffeur-service-policy': {
+      id: '/chauffeur-service-policy'
+      path: '/chauffeur-service-policy'
+      fullPath: '/chauffeur-service-policy'
+      preLoaderRoute: typeof ChauffeurServicePolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contact': {
       id: '/contact'
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookie-policy': {
+      id: '/cookie-policy'
+      path: '/cookie-policy'
+      fullPath: '/cookie-policy'
+      preLoaderRoute: typeof CookiePolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/corporate': {
@@ -625,11 +691,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OccasionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/policies': {
+      id: '/policies'
+      path: '/policies'
+      fullPath: '/policies'
+      preLoaderRoute: typeof PoliciesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy-policy': {
       id: '/privacy-policy'
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/service-areas': {
@@ -849,14 +929,18 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BookRoute: BookRoute,
   CatalogueRoute: CatalogueRoute,
+  ChauffeurServicePolicyRoute: ChauffeurServicePolicyRoute,
   ContactRoute: ContactRoute,
+  CookiePolicyRoute: CookiePolicyRoute,
   CorporateRoute: CorporateRoute,
   CorporateTransportationRoute: CorporateTransportationRoute,
   FaqRoute: FaqRoute,
   FleetRoute: FleetRoute,
   J1s30MRp_geRZtdPP860RwRoute: J1s30MRp_geRZtdPP860RwRouteWithChildren,
   OccasionsRoute: OccasionsRoute,
+  PoliciesRoute: PoliciesRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
+  RefundPolicyRoute: RefundPolicyRoute,
   ServiceAreasRoute: ServiceAreasRoute,
   ServicesRoute: ServicesRoute,
   SpecialOccasionsRoute: SpecialOccasionsRoute,

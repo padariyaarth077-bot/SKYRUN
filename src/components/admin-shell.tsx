@@ -1,3 +1,4 @@
+import { OFFICIAL_LOGO } from "@/lib/branding";
 import { NotificationBell } from "@/components/notification-context";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
@@ -164,6 +165,13 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="flex h-full flex-col bg-adm-side text-adm-side-fg">
       <div className="px-5 py-5">
+        <img
+          src={OFFICIAL_LOGO}
+          width="72"
+          height="72"
+          alt="Skyrun Limo official logo"
+          className="mb-3 h-[72px] w-[72px] object-contain"
+        />
         <div className="text-[15px] font-bold tracking-[0.18em]">
           SKYRUN <span className="font-normal text-adm-side-muted">LIMO</span>
         </div>
@@ -280,7 +288,7 @@ export function AdminShell({
         <main className="adm-in mx-auto max-w-7xl px-4 py-6 sm:px-6">
           <div className="mb-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
+              <h1 className="break-all text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
               {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
             </div>
             {actions}

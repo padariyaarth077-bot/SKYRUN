@@ -1,3 +1,4 @@
+import { OFFICIAL_LOGO } from "@/lib/branding";
 /**
  * Private admin login page — /j1s30MRp_geRZtdPP860Rw (exact / index)
  *
@@ -152,14 +153,13 @@ function AdminLoginPage() {
         {/* Left brand panel */}
         <div className="flex flex-col justify-between px-8 py-10 lg:w-[52%] lg:px-16 lg:py-14">
           <div>
-            <div className="brand brand-light" aria-label="Skyrun Limo">
-              <span className="brand-name" style={{ fontSize: "clamp(28px, 3vw, 36px)" }}>
-                SKYRUN
-              </span>
-              <span className="brand-sub" style={{ fontSize: "9px", marginTop: "8px" }}>
-                LIMO · CHICAGO
-              </span>
-            </div>
+            <img
+              src={OFFICIAL_LOGO}
+              width="112"
+              height="112"
+              alt="Skyrun Limo — Premium Limo Service"
+              className="h-28 w-28 object-contain"
+            />
           </div>
 
           <div className="hidden py-8 lg:block">

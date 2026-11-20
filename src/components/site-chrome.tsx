@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Facebook, Instagram, Mail, MapPin, Menu, Phone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HEADER_LOGO } from "@/lib/branding";
+import { NewsletterPopup } from "@/components/newsletter-popup";
 
 export const navLinks = [
+  ["/", "Home"],
   ["/services", "Services"],
   ["/fleet", "Fleet"],
-  ["/airport", "Airport"],
-  ["/corporate", "Corporate"],
-  ["/occasions", "Occasions"],
-  ["/service-areas", "Service areas"],
+  ["/airport-transfer", "Airport"],
+  ["/corporate-transportation", "Corporate"],
   ["/about", "About"],
   ["/contact", "Contact"],
 ] as const;
@@ -17,8 +18,16 @@ export const navLinks = [
 export function Brand({ light = false }: { light?: boolean }) {
   return (
     <Link className={`brand${light ? " brand-light" : ""}`} to="/" aria-label="Skyrun Limo home">
-      <span className="brand-name">SKYRUN</span>
-      <span className="brand-sub">LIMO LLC</span>
+      <img
+        src={HEADER_LOGO}
+        className="official-brand-logo"
+        alt="Skyrun Limo — Premium Limo Service"
+        width="512"
+        height="512"
+      />
+      <span className="official-brand-label" aria-hidden="true">
+        SKYRUN LIMO<span>CHICAGO</span>
+      </span>
     </Link>
   );
 }
@@ -39,11 +48,21 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
 
   return (
     <header
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setMenuOpen(false);
+      }}
       className={`site-header${overlay ? "" : " site-header-static"}${solid ? " site-header-scrolled" : ""}`}
     >
       <div className="header-inner">
+        <a className="skip-link" href="#main-content">
+          Skip to content
+        </a>
         <Brand light={!solid} />
-        <nav className={`main-nav${menuOpen ? " main-nav-open" : ""}`} aria-label="Main navigation">
+        <nav
+          className={`main-nav${menuOpen ? " main-nav-open" : ""}`}
+          id="public-navigation"
+          aria-label="Main navigation"
+        >
           {navLinks.map(([to, label]) => (
             <Link
               key={to}
@@ -61,7 +80,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           </a>
           <Button asChild className="button-gold header-book">
             <Link to="/book">
-              Book now <ArrowUpRight aria-hidden="true" />
+              Book a Ride <ArrowUpRight aria-hidden="true" />
             </Link>
           </Button>
           <button
@@ -69,6 +88,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             type="button"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
+            aria-controls="public-navigation"
             onClick={() => setMenuOpen((open) => !open)}
           >
             {menuOpen ? <X /> : <Menu />}
@@ -85,12 +105,22 @@ export function SiteFooter() {
       <div className="footer-main page-width">
         <div className="footer-brand">
           <Brand light />
-          <p>ELEVATE EVERY JOURNEY.</p>
-          <span>
-            Private chauffeur transportation
-            <br />
-            Chicago, Illinois
-          </span>
+          <p>CHICAGO. YOUR WAY.</p>
+          <span>Private chauffeur transportation across Chicago and surrounding suburbs.</span>
+          <p className="footer-services">
+            Airport transfers · Corporate travel · Hourly rides · Special occasions
+          </p>
+          <div className="footer-socials" aria-label="Follow Skyrun Limo">
+            <span>Follow Skyrun</span>
+            <div>
+              <a href="https://www.facebook.com/" aria-label="Find Skyrun Limo on Facebook">
+                <Facebook aria-hidden="true" />
+              </a>
+              <a href="https://www.instagram.com/" aria-label="Find Skyrun Limo on Instagram">
+                <Instagram aria-hidden="true" />
+              </a>
+            </div>
+          </div>
         </div>
         <div className="footer-nav">
           <span>Explore</span>
@@ -107,26 +137,42 @@ export function SiteFooter() {
           <Link to="/faq">FAQs</Link>
           <Link to="/contact">Contact</Link>
           <Link to="/book">Book a ride</Link>
-          <Link to="/privacy-policy">Privacy</Link>
-          <Link to="/terms-and-conditions">Terms</Link>
+          <a href="/policies">Policies & information</a>
         </div>
         <div className="footer-contact">
           <span>Reach the team</span>
-          <a href="tel:+12246192024">Vrund Patel — 224-619-2024</a>
-          <a href="tel:+17792406371">Nisharg Patel — 779-240-6371</a>
-          <a href="mailto:skyrunlimo2428@gmail.com">skyrunlimo2428@gmail.com</a>
+          <a href="tel:+12246192024">
+            <Phone aria-hidden="true" /> Vrund Patel — 224-619-2024
+          </a>
+          <a href="tel:+17792406371">
+            <Phone aria-hidden="true" /> Nisharg Patel — 779-240-6371
+          </a>
+          <a href="mailto:skyrunlimo2428@gmail.com">
+            <Mail aria-hidden="true" /> skyrunlimo2428@gmail.com
+          </a>
+          <p className="footer-location">
+            <MapPin aria-hidden="true" /> Chicago, Illinois
+          </p>
           <Button asChild className="button-gold">
             <Link to="/book">
-              Request a ride <ArrowUpRight aria-hidden="true" />
+              Book a Ride <ArrowUpRight aria-hidden="true" />
             </Link>
           </Button>
         </div>
       </div>
+      <nav className="footer-policies page-width" aria-label="Policy links">
+        <a href="/privacy-policy">Privacy Policy</a>
+        <a href="/terms-and-conditions">Terms & Conditions</a>
+        <a href="/refund-policy">Refund Policy</a>
+        <a href="/cookie-policy">Cookie Policy</a>
+        <a href="/chauffeur-service-policy">Chauffeur Service & Booking Policy</a>
+      </nav>
       <div className="footer-bottom page-width">
         <span>© {new Date().getFullYear()} SKYRUN LIMO LLC</span>
         <span>CHICAGO, ILLINOIS</span>
         <Link to="/">Back to top ↑</Link>
       </div>
+      <NewsletterPopup />
     </footer>
   );
 }

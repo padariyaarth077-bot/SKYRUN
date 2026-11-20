@@ -1,8 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { InnerPage } from "@/components/inner-page";
-import img from "@/assets/skyrun-hero.jpg";
+const img = "/vehicle-images/cadillac-escalade-esv-preview.jpg";
+import { fleetSelection } from "@/lib/public-fleet";
 
 export const Route = createFileRoute("/book")({
+  validateSearch: (search: Record<string, unknown>): { vehicle?: string } => {
+    const selection = fleetSelection(search["vehicle"]);
+    return selection ? { vehicle: selection.vehicle } : {};
+  },
   head: () => ({
     meta: [
       { title: "Book a Ride \u2014 Skyrun Limo Chicago" },
@@ -23,12 +28,22 @@ export const Route = createFileRoute("/book")({
 });
 
 function BookPage() {
+  const { vehicle } = Route.useSearch();
+  const selection = fleetSelection(vehicle);
   return (
     <InnerPage
-      eyebrow="Book a ride"
-      title="Tell us about"
-      accent="your journey."
-      intro="Send a ride request to Skyrun Limo. Bookings are confirmed when Skyrun replies."
+      eyebrow={
+        selection?.special ? "Special Fleet · Request availability" : "Regular Fleet · Ride enquiry"
+      }
+      title={selection ? `Request ${selection.vehicle}.` : "Plan your Chicago ride."}
+      intro={
+        selection?.special
+          ? "Send a request for this specific vehicle. Our team will confirm availability, prepare a custom quote and approve the arrangement before a booking is confirmed."
+          : selection
+            ? "Submit your Regular ride for admin review. Your amount and category availability need approval; no payment is requested during booking."
+            : "Send your route and travel details for a quote. Your ride is confirmed when Skyrun replies."
+      }
+      initialVehicle={vehicle ?? ""}
       image={img}
       blocks={[]}
       showForm

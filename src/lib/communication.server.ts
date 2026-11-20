@@ -1,3 +1,4 @@
+import { emailBrandingHtml } from "@/lib/branding";
 import { createServerOnlyFn } from "@tanstack/react-start";
 import { z } from "zod";
 const payloadSchema = z.object({
@@ -26,7 +27,7 @@ const escape = (v: string) =>
     /[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
   );
-export function communicationTemplate(input: unknown) {
+export function communicationTemplate(input: unknown, verifiedLogoUrl?: string) {
   const row = envelopeSchema.parse(input),
     p = row.payload;
   if (row.kind !== "STAFF_URGENT" && p.status !== row.kind.replace("BOOKING_", ""))
@@ -56,7 +57,7 @@ export function communicationTemplate(input: unknown) {
     to: row.recipient,
     subject: `Skyrun Limo — ${heading.replace(/[\r\n]/g, " ")}`,
     text: ["SKYRUN LIMO", ...lines].join("\n\n"),
-    html: `<!doctype html><html><body style="margin:0;background:#f4f5f8;font-family:Arial,sans-serif;color:#172033"><main style="max-width:600px;margin:24px auto;background:white;padding:28px;border-radius:12px"><h1 style="font-size:24px">SKYRUN LIMO</h1><h2 style="font-size:20px">${escape(heading)}</h2>${lines.map((line) => `<p style="line-height:1.6;overflow-wrap:anywhere">${escape(line)}</p>`).join("")}</main></body></html>`,
+    html: `<!doctype html><html><body style="margin:0;background:#f4f5f8;font-family:Arial,sans-serif;color:#172033"><main style="max-width:600px;margin:24px auto;background:white;padding:28px;border-radius:12px">${emailBrandingHtml(verifiedLogoUrl)}<h2 style="font-size:20px">${escape(heading)}</h2>${lines.map((line) => `<p style="line-height:1.6;overflow-wrap:anywhere">${escape(line)}</p>`).join("")}</main></body></html>`,
   };
 }
 export const processCommunication = createServerOnlyFn(async () => {

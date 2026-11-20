@@ -1,3 +1,4 @@
+import { SOCIAL_LOGO } from "@/lib/branding";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -78,14 +79,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Skyrun Limo | Chicago Chauffeur Service" },
+      {
+        name: "description",
+        content:
+          "Private chauffeur transportation for Chicago and surrounding suburbs. Request an airport transfer, business journey or special vehicle.",
+      },
+      { name: "author", content: "Skyrun Limo LLC" },
+      { name: "theme-color", content: "#f7f9fc" },
+      { property: "og:title", content: "Skyrun Limo | Chicago Chauffeur Service" },
+      {
+        property: "og:description",
+        content: "Your Chicago journey, personally arranged with Skyrun Limo.",
+      },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: `https://www.skyrunlimo.com${SOCIAL_LOGO}` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Skyrun Limo official logo — Premium Limo Service" },
+      { name: "twitter:image", content: `https://www.skyrunlimo.com${SOCIAL_LOGO}` },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
@@ -93,6 +106,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,

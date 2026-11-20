@@ -46,7 +46,7 @@ export const notificationSchema = z.object({
   kind: z.enum(eventKinds),
   severity: z.enum(["NORMAL", "IMPORTANT", "URGENT"]),
   title: z.string().max(160),
-  entity_type: z.enum(["lead", "booking", "conversation"]),
+  entity_type: z.enum(["lead", "booking", "conversation", "ride_request"]),
   entity_id: z.string().uuid(),
   created_at: z.string(),
   read_at: z.string().nullable(),
@@ -64,6 +64,7 @@ export function parsePreferences(value: Record<string, unknown>) {
 }
 export function notificationRoute(n: Pick<StaffNotification, "entity_type" | "entity_id">) {
   if (!z.string().uuid().safeParse(n.entity_id).success) return null;
+  if (n.entity_type === "ride_request") return `/admin/ride-request/${n.entity_id}`;
   return n.entity_type === "lead"
     ? `/admin/leads/${n.entity_id}`
     : n.entity_type === "booking"

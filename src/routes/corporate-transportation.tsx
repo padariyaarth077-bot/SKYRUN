@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { JourneyContent } from "@/components/journey-content";
 import { InnerPage } from "@/components/inner-page";
-import img from "@/assets/skyrun-executive.jpg";
+const img = "/vehicle-images/mercedes-benz-sprinter-executive-van.jpg";
 
 export const Route = createFileRoute("/corporate-transportation")({
   head: () => ({
@@ -32,20 +33,8 @@ function CorporateTransportationPage() {
       accent="without the distraction."
       intro="Executive car service for business travel, meetings and corporate events in Chicago."
       image={img}
-      blocks={[
-        {
-          title: "For executives",
-          body: "Airport runs, client pickups and meeting-to-meeting travel.",
-        },
-        {
-          title: "For events",
-          body: "Coordinated transportation for conferences and corporate gatherings.",
-        },
-        {
-          title: "Accounts",
-          body: "Ask about recurring bookings for your team \u2014 details confirmed directly with Skyrun.",
-        },
-      ]}
-    />
+    >
+      <JourneyContent page="corporate" />
+    </InnerPage>
   );
 }

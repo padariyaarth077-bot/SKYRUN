@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { JourneyContent } from "@/components/journey-content";
 import { InnerPage } from "@/components/inner-page";
-import img from "@/assets/skyrun-executive.jpg";
+const img = "/vehicle-images/cadillac-escalade-esv-2.jpg";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -30,15 +31,8 @@ function ContactPage() {
       accent="details."
       intro="Call or email Skyrun Limo to request a chauffeur in Chicago, Illinois."
       image={img}
-      blocks={[
-        {
-          title: "Phone",
-          body: "Call the team directly:",
-          items: ["Vrund Patel \u2014 224-619-2024", "Nisharg Patel \u2014 779-240-6371"],
-        },
-        { title: "Email", body: "skyrunlimo2428@gmail.com" },
-        { title: "Location", body: "Chicago, Illinois" },
-      ]}
-    />
+    >
+      <JourneyContent page="contact" />
+    </InnerPage>
   );
 }

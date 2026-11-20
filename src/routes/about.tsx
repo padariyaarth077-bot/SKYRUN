@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { JourneyContent } from "@/components/journey-content";
 import { InnerPage } from "@/components/inner-page";
 import img from "@/assets/skyrun-chicago.jpg";
 
@@ -32,14 +33,8 @@ function AboutPage() {
       accent="A Chicago point of view."
       intro="Meet Skyrun Limo LLC, a Chicago transportation company led by Vrund Patel and Nisharg Patel."
       image={img}
-      blocks={[
-        { title: "Our idea", body: "The ride should feel as considered as the destination." },
-        {
-          title: "The team",
-          body: "Reach the people behind Skyrun directly:",
-          items: ["Vrund Patel \u2014 224-619-2024", "Nisharg Patel \u2014 779-240-6371"],
-        },
-      ]}
-    />
+    >
+      <JourneyContent page="about" />
+    </InnerPage>
   );
 }

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { JourneyContent } from "@/components/journey-content";
 import { InnerPage } from "@/components/inner-page";
-import img from "@/assets/skyrun-airport.jpg";
+const img = "/vehicle-images/cadillac-escalade-esv-preview.jpg";
 
 export const Route = createFileRoute("/airport-transfer")({
   head: () => ({
@@ -8,12 +9,14 @@ export const Route = createFileRoute("/airport-transfer")({
       { title: "Airport Transfers \u2014 Skyrun Limo Chicago" },
       {
         name: "description",
-        content: "Chauffeured rides to and from O'Hare, Midway and all airports from Chicago.",
+        content:
+          "Request a private transfer for O'Hare or Midway across Chicago and surrounding suburbs.",
       },
       { property: "og:title", content: "Airport Transfers \u2014 Skyrun Limo Chicago" },
       {
         property: "og:description",
-        content: "Chauffeured rides to and from O'Hare, Midway and all airports from Chicago.",
+        content:
+          "Request a private transfer for O'Hare or Midway across Chicago and surrounding suburbs.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -26,25 +29,12 @@ function AirportTransferPage() {
   return (
     <InnerPage
       eyebrow="Airport transfers"
-      title="Chicago to"
-      accent="all airports."
-      intro="Chauffeured rides to and from O'Hare, Midway and all airports from Chicago."
+      title="Your arrival,"
+      accent="personally arranged."
+      intro="Request a private transfer for O’Hare or Midway across Chicago and surrounding suburbs. Discuss other airport routes with our team."
       image={img}
-      blocks={[
-        {
-          title: "Airports",
-          body: "Request service for:",
-          items: [
-            "O'Hare International (ORD)",
-            "Midway International (MDW)",
-            "Other regional airports on request",
-          ],
-        },
-        {
-          title: "How it works",
-          body: "Share your flight details, pickup address and passenger count. Skyrun will confirm timing, pickup instructions and pricing directly.",
-        },
-      ]}
-    />
+    >
+      <JourneyContent page="airport" />
+    </InnerPage>
   );
 }

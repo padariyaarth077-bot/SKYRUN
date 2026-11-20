@@ -11,6 +11,112 @@ export type Database = {
   __InternalSupabase: { PostgrestVersion: "14.18" };
   public: {
     Tables: {
+      regular_ride_approvals: {
+        Row: {
+          approved_amount: number | null;
+          availability_checked_at: string | null;
+          availability_checked_by: string | null;
+          availability_note: string | null;
+          booking_id: string | null;
+          business_unit_id: string;
+          category_code: string;
+          created_at: string;
+          currency: string;
+          input_hash: string;
+          luggage_details: string;
+          payment_status: string;
+          pricing_basis: string | null;
+          rejection_reason: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          ride_request_id: string;
+          service: string;
+          state: string;
+          updated_at: string;
+          vehicle_category_id: string;
+          version: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          approved_amount?: number | null;
+          availability_checked_at?: string | null;
+          availability_checked_by?: string | null;
+          availability_note?: string | null;
+          booking_id?: string | null;
+          business_unit_id: string;
+          category_code: string;
+          created_at?: string;
+          currency?: string;
+          input_hash: string;
+          luggage_details: string;
+          payment_status?: string;
+          pricing_basis?: string | null;
+          rejection_reason?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          ride_request_id: string;
+          service: string;
+          state?: string;
+          updated_at?: string;
+          vehicle_category_id: string;
+          version?: number;
+        };
+        Update: {
+          approved_amount?: number | null;
+          availability_checked_at?: string | null;
+          availability_checked_by?: string | null;
+          availability_note?: string | null;
+          booking_id?: string | null;
+          business_unit_id?: string;
+          category_code?: string;
+          created_at?: string;
+          currency?: string;
+          input_hash?: string;
+          luggage_details?: string;
+          payment_status?: string;
+          pricing_basis?: string | null;
+          rejection_reason?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          ride_request_id?: string;
+          service?: string;
+          state?: string;
+          updated_at?: string;
+          vehicle_category_id?: string;
+          version?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "regular_ride_approvals_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: true;
+            referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "regular_ride_approvals_business_unit_id_fkey";
+            columns: ["business_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "business_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "regular_ride_approvals_ride_request_id_fkey";
+            columns: ["ride_request_id"];
+            isOneToOne: true;
+            referencedRelation: "ride_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "regular_ride_approvals_vehicle_category_id_fkey";
+            columns: ["vehicle_category_id"];
+            isOneToOne: false;
+            referencedRelation: "vehicle_categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+
       request_budgets: Row<{ subject_hash: string; scope: string; bucket: string; used: number }>;
       notification_preferences: Row<{
         user_id: string;
@@ -361,6 +467,7 @@ export type Database = {
         updated_at: string;
       }>;
       vehicle_categories: Row<{
+        regular_booking_code: string | null;
         image_path: string | null;
         id: string;
         business_unit_id: string;
@@ -424,6 +531,38 @@ export type Database = {
       };
     };
     Functions: {
+      submit_regular_ride: {
+        Args: {
+          _category: string;
+          _date: string;
+          _dropoff: string;
+          _email: string;
+          _key: string;
+          _luggage: string;
+          _name: string;
+          _notes: string;
+          _passengers: number;
+          _phone: string;
+          _pickup: string;
+          _service: string;
+          _time: string;
+        };
+        Returns: Json;
+      };
+      review_regular_ride: {
+        Args: {
+          _action: string;
+          _amount?: number;
+          _availability?: string;
+          _basis?: string;
+          _expected: number;
+          _id: string;
+          _operation: string;
+          _reason?: string;
+        };
+        Returns: string;
+      };
+
       phase9_lead_status: {
         Args: {
           _id: string;

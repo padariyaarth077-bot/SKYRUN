@@ -1,3 +1,4 @@
+import { RegularRequests } from "@/components/regular-approval";
 import { NotificationCenter } from "@/components/notifications";
 import { Reports } from "@/components/reports";
 import { FinanceList } from "@/components/finance-documents";
@@ -441,6 +442,7 @@ function ModulePage() {
           approval and enabled email configuration.
         </p>
       )}
+      {module === "ride-requests" && <RegularRequests />}
       {module === "bookings" && (
         <p className="mb-3">
           Customer acceptance creates a pending booking. This list displays saved records and their

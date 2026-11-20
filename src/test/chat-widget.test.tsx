@@ -146,3 +146,38 @@ it("does not permit messages in a resolved conversation and offers an explicit n
   expect(screen.getByRole("button", { name: "Send message" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "Start a new chat" })).toBeInTheDocument();
 });
+
+it("acknowledges a saved contact enquiry using the actual reference without claiming a booking", async () => {
+  submitChatContact.mockResolvedValue({ ok: true, reference: "SKY-ENQ-000123" });
+  await open();
+  fireEvent.click(screen.getByRole("button", { name: "Share contact details" }));
+  for (const [field, value] of Object.entries({
+    Name: "Ava",
+    Email: "ava@example.test",
+    Phone: "12345678",
+  })) {
+    fireEvent.change(screen.getByPlaceholderText(field), { target: { value } });
+  }
+  fireEvent.click(screen.getByRole("button", { name: "Save enquiry" }));
+  const confirmation = await screen.findByRole("status");
+  expect(confirmation).toHaveTextContent("Contact Enquiry Submitted");
+  expect(confirmation).toHaveTextContent("Enquiry Reference: SKY-ENQ-000123");
+  expect(confirmation).toHaveTextContent("contact details");
+  expect(confirmation).toHaveTextContent("ride is not yet confirmed");
+  expect(submitChatContact).toHaveBeenCalledTimes(1);
+});
+it("does not show a successful contact acknowledgement without a saved reference", async () => {
+  submitChatContact.mockResolvedValue({ ok: false, reference: "" });
+  await open();
+  fireEvent.click(screen.getByRole("button", { name: "Share contact details" }));
+  for (const [field, value] of Object.entries({
+    Name: "Ava",
+    Email: "ava@example.test",
+    Phone: "12345678",
+  })) {
+    fireEvent.change(screen.getByPlaceholderText(field), { target: { value } });
+  }
+  fireEvent.click(screen.getByRole("button", { name: "Save enquiry" }));
+  await screen.findByText(/We could not save your contact details/);
+  expect(screen.queryByRole("status")).toBeNull();
+});

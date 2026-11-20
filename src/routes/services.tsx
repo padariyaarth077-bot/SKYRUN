@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { JourneyContent } from "@/components/journey-content";
 import { InnerPage } from "@/components/inner-page";
-import img from "@/assets/skyrun-airport.jpg";
+const img = "/vehicle-images/cadillac-escalade-esv-preview.jpg";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
@@ -32,20 +33,8 @@ function ServicesPage() {
       accent="for every itinerary."
       intro="Airport transfers, corporate travel, hourly and point-to-point chauffeur service in Chicago."
       image={img}
-      blocks={[
-        {
-          title: "Airport transfers",
-          body: "Rides to and from O'Hare, Midway and other airports.",
-        },
-        {
-          title: "Corporate transportation",
-          body: "Executive travel, meetings and corporate events.",
-        },
-        { title: "Hourly chauffeur", body: "Keep a chauffeur for as long as your day needs." },
-        { title: "Point-to-point", body: "One way or round trip across Chicago and beyond." },
-        { title: "Special occasions", body: "Weddings, celebrations and evenings out." },
-        { title: "Event transportation", body: "Concerts, galas and group events." },
-      ]}
-    />
+    >
+      <JourneyContent page="services" />
+    </InnerPage>
   );
 }

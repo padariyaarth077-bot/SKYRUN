@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { InnerPage } from "@/components/inner-page";
-import img from "@/assets/skyrun-hero.jpg";
+const img = "/vehicle-images/mercedes-benz-sprinter-jet-van.jpg";
 
 export const Route = createFileRoute("/special-occasions")({
   head: () => ({

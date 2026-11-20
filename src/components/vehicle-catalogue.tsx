@@ -1,3 +1,4 @@
+import { PublicFleet } from "@/components/public-fleet";
 import { CarFront, Images } from "lucide-react";
 import { VEHICLE_MODELS } from "@/lib/vehicle-images";
 
@@ -11,6 +12,7 @@ export function VehicleCatalogue({
   const models = VEHICLE_MODELS.filter((model) =>
     model.name.toLowerCase().includes(search.trim().toLowerCase()),
   );
+  if (!internal) return <PublicFleet search={search} />;
   return (
     <>
       <p className="mb-6 max-w-3xl text-sm leading-relaxed text-muted-foreground">

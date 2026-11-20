@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BookingDeposits } from "@/components/booking-deposits";
+import { BookingWorkflow } from "@/components/regular-approval";
 import { readAll } from "@/lib/admin-data";
 import { AdminShell, Panel, StatusBadge } from "@/components/admin-shell";
 import type { Database } from "@/integrations/supabase/types";
@@ -134,9 +134,7 @@ function BookingDetail() {
               </p>
             </div>
           </Panel>
-          <Panel title="Deposit and booking operations">
-            <BookingDeposits booking={booking} onSaved={load} />
-          </Panel>
+          <BookingWorkflow booking={booking} onSaved={load} />
           <Panel title="Activity">
             <ul className="p-4">
               {acts.map((a) => (

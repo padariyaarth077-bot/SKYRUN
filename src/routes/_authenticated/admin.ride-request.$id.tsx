@@ -1,3 +1,4 @@
+import { RegularApproval } from "@/components/regular-approval";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,49 +57,56 @@ function RideDetail() {
       ) : !ride ? (
         <p>Ride request not found or unavailable.</p>
       ) : (
-        <Panel title="Trip details">
-          <div className="space-y-2 p-4">
-            <StatusBadge status={ride.status} />
-            <p>A ride request is an enquiry; it does not confirm a booking.</p>
-            {customer && (
-              <Link
-                to="/admin/customer/$id"
-                params={{ id: customer.id }}
-                className="block underline"
-              >
-                {customer.full_name}
-              </Link>
-            )}
-            {ride.lead_id ? (
-              <Link to="/admin/leads/$id" params={{ id: ride.lead_id }} className="block underline">
-                Open linked lead and activity
-              </Link>
-            ) : (
-              <p>No lead linked to this request.</p>
-            )}
-            <p>Pickup: {ride.pickup_location}</p>
-            <p>Drop-off: {ride.dropoff_location}</p>
-            <p>
-              Date: {ride.travel_date} · Time: {ride.pickup_time}
-            </p>
-            <p>
-              Passengers: {ride.passenger_count} · Trip type: {ride.trip_type}
-            </p>
-            {ride.return_date && (
+        <>
+          <Panel title="Trip details">
+            <div className="space-y-2 p-4">
+              <StatusBadge status={ride.status} />
+              <p>A ride request is an enquiry; it does not confirm a booking.</p>
+              {customer && (
+                <Link
+                  to="/admin/customer/$id"
+                  params={{ id: customer.id }}
+                  className="block underline"
+                >
+                  {customer.full_name}
+                </Link>
+              )}
+              {ride.lead_id ? (
+                <Link
+                  to="/admin/leads/$id"
+                  params={{ id: ride.lead_id }}
+                  className="block underline"
+                >
+                  Open linked lead and activity
+                </Link>
+              ) : (
+                <p>No lead linked to this request.</p>
+              )}
+              <p>Pickup: {ride.pickup_location}</p>
+              <p>Drop-off: {ride.dropoff_location}</p>
               <p>
-                Return: {ride.return_date} {ride.return_time}
+                Date: {ride.travel_date} · Time: {ride.pickup_time}
               </p>
-            )}
-            {ride.hourly_duration && <p>Hours: {ride.hourly_duration}</p>}
-            {ride.airport_code && (
               <p>
-                Airport: {ride.airport_code} {ride.airport_direction} · Flight{" "}
-                {ride.flight_number ?? "—"}
+                Passengers: {ride.passenger_count} · Trip type: {ride.trip_type}
               </p>
-            )}
-            <p className="whitespace-pre-wrap">{ride.notes ?? "No trip notes supplied."}</p>
-          </div>
-        </Panel>
+              {ride.return_date && (
+                <p>
+                  Return: {ride.return_date} {ride.return_time}
+                </p>
+              )}
+              {ride.hourly_duration && <p>Hours: {ride.hourly_duration}</p>}
+              {ride.airport_code && (
+                <p>
+                  Airport: {ride.airport_code} {ride.airport_direction} · Flight{" "}
+                  {ride.flight_number ?? "—"}
+                </p>
+              )}
+              <p className="whitespace-pre-wrap">{ride.notes ?? "No trip notes supplied."}</p>
+            </div>
+          </Panel>
+          <RegularApproval requestId={id} onSaved={load} />
+        </>
       )}
     </AdminShell>
   );

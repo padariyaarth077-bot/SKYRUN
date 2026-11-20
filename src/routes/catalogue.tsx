@@ -19,9 +19,9 @@ export const Route = createFileRoute("/catalogue")({
 function Catalogue() {
   const [search, setSearch] = useState("");
   return (
-    <div className="bg-background text-foreground">
+    <div className="public-site bg-background text-foreground">
       <SiteHeader />
-      <main className="page-width space-y-5 pb-12 pt-28">
+      <main id="main-content" className="page-width space-y-5 pb-12 pt-28">
         <h1 className="font-display text-4xl">Skyrun vehicle catalogue</h1>
         <label className="block">
           Search vehicle models

@@ -51,9 +51,10 @@ it("preserves values and key after failure, prevents concurrent calls, and reset
   await screen.findByText(/Something went wrong/);
   expect(screen.queryByText(/private database/)).toBeNull();
   expect(screen.getByLabelText("Full name")).toHaveValue("Ava");
-  submit.mockResolvedValue({ ok: true, reference: "SR-TEST" });
+  submit.mockResolvedValue({ ok: true, reference: "SKY-ENQ-000124" });
   fireEvent.submit(form);
   await screen.findByText(/awaiting review/);
+  expect(screen.getByRole("status")).toHaveTextContent("Enquiry Reference: SKY-ENQ-000124");
   expect(submit.mock.calls[1]?.[0].data.submissionKey).toBe(first.submissionKey);
   expect(screen.getByLabelText("Full name")).toHaveValue("");
   fireEvent.change(screen.getByLabelText("Full name"), { target: { value: "Ava" } });
@@ -109,4 +110,15 @@ it("starts a new logical enquiry with a new key after an explicit reset", async 
   fireEvent.submit(form);
   await screen.findByText(/Something went wrong/);
   expect(submit.mock.calls[1]?.[0].data.submissionKey).not.toBe(firstKey);
+});
+
+it("preselects a requested fleet vehicle without submitting an enquiry", () => {
+  render(<BookingForm initialVehicle="Rolls-Royce Ghost" />);
+  expect(screen.getByRole("combobox", { name: "Vehicle preference" })).toHaveValue(
+    "Rolls-Royce Ghost",
+  );
+  expect(
+    screen.getByRole("group", { name: "Special Fleet — availability and approval required" }),
+  ).toHaveTextContent("Rolls-Royce Ghost");
+  expect(submit).not.toHaveBeenCalled();
 });
