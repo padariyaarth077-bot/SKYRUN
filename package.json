@@ -96,6 +96,9 @@
     "vitest": "^4.1.10"
   },
   "optionalDependencies": {
-    "lightningcss-linux-x64-gnu": "1.32.0"
+    "lightningcss-linux-x64-gnu": "1.32.0",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.3.3",
+    "@oxc-parser/binding-linux-x64-gnu": "0.120.0",
+    "@rolldown/binding-linux-x64-gnu": "1.2.1"
   }
 }
