@@ -1,6 +1,8 @@
 import { ArrowUpRight, Mail, Phone, MapPin } from "lucide-react";
-import { BookingForm } from "@/components/skyrun-site";
+import { submitLead } from "@/lib/leads.functions";
+import { useRef, useState, type FormEvent } from "react";
 import chicago from "@/assets/skyrun-chicago.jpg";
+import { trackLead } from "@/lib/meta-pixel";
 
 const escalade = "/vehicle-images/cadillac-escalade-esv-preview.jpg";
 const sprinter = "/vehicle-images/mercedes-benz-sprinter-executive-van.jpg";
@@ -46,14 +48,16 @@ export function ContactDetails() {
       <a href="tel:+12246192024">
         <Phone aria-hidden="true" />
         <span>
-          Vrund Patel<strong>224-619-2024</strong>
+          <strong className="contact-person-name">Vrund Patel</strong>
+          <strong>224-619-2024</strong>
         </span>
         <ArrowUpRight aria-hidden="true" />
       </a>
       <a href="tel:+17792406371">
         <Phone aria-hidden="true" />
         <span>
-          Nisharg Patel<strong>779-240-6371</strong>
+          <strong className="contact-person-name">Nisharg Patel</strong>
+          <strong>779-240-6371</strong>
         </span>
         <ArrowUpRight aria-hidden="true" />
       </a>
@@ -65,6 +69,78 @@ export function ContactDetails() {
         <ArrowUpRight aria-hidden="true" />
       </a>
     </div>
+  );
+}
+
+function ContactEnquiryForm() {
+  const submissionKey = useRef<string | undefined>(undefined);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+  const [reference, setReference] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    setPending(true);
+    setError("");
+    setReference("");
+    try {
+      submissionKey.current ??= crypto.randomUUID();
+      const result = await submitLead({
+        data: {
+          source: "CONTACT_FORM",
+          submissionKey: submissionKey.current,
+          name: String(values.get("name") ?? ""),
+          email: String(values.get("email") ?? ""),
+          phone: String(values.get("phone") ?? ""),
+          subject: "General contact enquiry",
+          message: String(values.get("message") ?? ""),
+        },
+      });
+      setReference(result.reference);
+      trackLead(result.reference);
+      submissionKey.current = undefined;
+      form.reset();
+    } catch {
+      setError("We couldn’t send your message. Please try again or contact the team directly.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <form className="enquiry-form-panel contact-enquiry-form" onSubmit={handleSubmit}>
+      <p className="mobility-kicker">SEND A MESSAGE</p>
+      <div className="contact-form-grid">
+        <label>
+          <span>Full name</span>
+          <input name="name" autoComplete="name" required maxLength={120} />
+        </label>
+        <label>
+          <span>Email</span>
+          <input name="email" type="email" autoComplete="email" required maxLength={200} />
+        </label>
+        <label>
+          <span>Phone</span>
+          <input name="phone" type="tel" autoComplete="tel" required minLength={5} maxLength={40} />
+        </label>
+        <label className="contact-message-field">
+          <span>How can we help?</span>
+          <textarea name="message" required maxLength={4000} rows={5} />
+        </label>
+      </div>
+      {error && <p className="contact-form-error" role="alert">{error}</p>}
+      {reference && (
+        <p className="contact-form-success" role="status">
+          Your enquiry was sent to the Skyrun team. Reference: {reference}
+        </p>
+      )}
+      <button className="primary-action" type="submit" disabled={pending}>
+        {pending ? "Sending…" : "Send enquiry"} <ArrowUpRight aria-hidden="true" />
+      </button>
+      <p className="contact-form-note">Your message will appear in the admin Contact Messages section.</p>
+    </form>
   );
 }
 
@@ -84,23 +160,23 @@ export function JourneyContent({
         <section className="journey-enquiry">
           <div className="page-width enquiry-layout">
             <div>
-              <p className="mobility-kicker">YOUR JOURNEY DETAILS</p>
-              <h2>Tell us what you have in mind.</h2>
+              <p className="mobility-kicker">GENERAL ENQUIRIES</p>
+              <h2>How can we help?</h2>
               <p>
-                Send your itinerary and vehicle preference through our ride enquiry form. The team
-                will review your request and discuss availability and pricing with you.
+                Send a question or ask the team to get in touch. For pickup, destination, date, time,
+                and vehicle details, use the separate ride request form.
               </p>
               <p>
                 <MapPin aria-hidden="true" size={18} /> Chicago and surrounding suburbs
               </p>
               <p>
-                For a change to an existing arrangement, contact the team directly with your journey
-                details.
+                For a ride request, use the Book a Ride button in the header.
               </p>
+              <a className="journey-link" href="/book">
+                Book a ride <ArrowUpRight aria-hidden="true" />
+              </a>
             </div>
-            <div className="enquiry-form-panel">
-              <BookingForm />
-            </div>
+            <ContactEnquiryForm />
           </div>
         </section>
       </>

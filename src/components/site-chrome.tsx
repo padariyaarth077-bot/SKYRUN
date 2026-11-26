@@ -4,6 +4,7 @@ import { ArrowUpRight, Facebook, Instagram, Mail, MapPin, Menu, Phone, X } from 
 import { Button } from "@/components/ui/button";
 import { HEADER_LOGO } from "@/lib/branding";
 import { NewsletterPopup } from "@/components/newsletter-popup";
+import { CookieSettingsLink } from "@/components/cookie-consent";
 
 export const navLinks = [
   ["/", "Home"],
@@ -166,6 +167,7 @@ export function SiteFooter() {
         <a href="/refund-policy">Refund Policy</a>
         <a href="/cookie-policy">Cookie Policy</a>
         <a href="/chauffeur-service-policy">Chauffeur Service & Booking Policy</a>
+        <CookieSettingsLink />
       </nav>
       <div className="footer-bottom page-width">
         <span>© {new Date().getFullYear()} SKYRUN LIMO LLC</span>

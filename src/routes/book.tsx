@@ -2,28 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { InnerPage } from "@/components/inner-page";
 const img = "/vehicle-images/cadillac-escalade-esv-preview.jpg";
 import { fleetSelection } from "@/lib/public-fleet";
+import { publicSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/book")({
   validateSearch: (search: Record<string, unknown>): { vehicle?: string } => {
     const selection = fleetSelection(search["vehicle"]);
     return selection ? { vehicle: selection.vehicle } : {};
   },
-  head: () => ({
-    meta: [
-      { title: "Book a Ride \u2014 Skyrun Limo Chicago" },
-      {
-        name: "description",
-        content: "Send a ride request to Skyrun Limo. Bookings are confirmed when Skyrun replies.",
-      },
-      { property: "og:title", content: "Book a Ride \u2014 Skyrun Limo Chicago" },
-      {
-        property: "og:description",
-        content: "Send a ride request to Skyrun Limo. Bookings are confirmed when Skyrun replies.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    publicSeo(
+      "/book",
+      "Request a Chicago Chauffeur Ride | Skyrun Limo",
+      "Send Skyrun your pickup, destination and travel details. The team reviews availability and confirms arrangements directly; submitting a request does not confirm a ride.",
+    ),
+
   component: BookPage,
 });
 

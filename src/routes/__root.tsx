@@ -1,4 +1,4 @@
-import { SOCIAL_LOGO } from "@/lib/branding";
+import { organizationJsonLd } from "@/lib/seo";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -10,6 +10,8 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { CookieConsent } from "@/components/cookie-consent";
+import { MetaPixelTracker } from "@/components/meta-pixel-tracker";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -93,11 +95,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Your Chicago journey, personally arranged with Skyrun Limo.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: `https://www.skyrunlimo.com${SOCIAL_LOGO}` },
+      { property: "og:url", content: "https://www.skyrunlimo.com/" },
+      {
+        property: "og:image",
+        content: "https://www.skyrunlimo.com/branding/skyrun-logo-social.jpg",
+      },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { property: "og:image:alt", content: "Skyrun Limo official logo — Premium Limo Service" },
-      { name: "twitter:image", content: `https://www.skyrunlimo.com${SOCIAL_LOGO}` },
+      { name: "twitter:title", content: "Skyrun Limo | Chicago Chauffeur Service" },
+      {
+        name: "twitter:description",
+        content:
+          "Private chauffeur transportation for Chicago and surrounding suburbs. Request an airport transfer, business journey or special vehicle.",
+      },
+      {
+        name: "twitter:image",
+        content: "https://www.skyrunlimo.com/branding/skyrun-logo-social.jpg",
+      },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -105,9 +120,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      {
+        rel: "icon",
+        href: "/branding/skyrun-logo-header.png",
+        type: "image/png",
+        sizes: "512x512",
+      },
+      { rel: "apple-touch-icon", href: "/branding/skyrun-logo-header.png", sizes: "512x512" },
     ],
   }),
   shellComponent: RootShell,
@@ -121,6 +140,12 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
       </head>
       <body>
         {children}
@@ -137,6 +162,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <MetaPixelTracker />
+      <CookieConsent />
     </QueryClientProvider>
   );
 }

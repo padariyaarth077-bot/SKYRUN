@@ -1,24 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { InnerPage } from "@/components/inner-page";
+import { publicSeo } from "@/lib/seo";
 import img from "@/assets/skyrun-chicago.jpg";
 
 export const Route = createFileRoute("/faq")({
-  head: () => ({
-    meta: [
-      { title: "FAQs \u2014 Skyrun Limo Chicago" },
-      {
-        name: "description",
-        content: "Answers to common questions about booking a Skyrun Limo chauffeur in Chicago.",
-      },
-      { property: "og:title", content: "FAQs \u2014 Skyrun Limo Chicago" },
-      {
-        property: "og:description",
-        content: "Answers to common questions about booking a Skyrun Limo chauffeur in Chicago.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    publicSeo(
+      "/faq",
+      "Chicago Chauffeur Service FAQs | Skyrun Limo",
+      "Find answers about requesting a Skyrun chauffeur, O’Hare and Midway transfers, service areas, vehicles and booking confirmation.",
+    ),
   component: FaqPage,
 });
 

@@ -1,26 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { InnerPage } from "@/components/inner-page";
+import { publicSeo } from "@/lib/seo";
 const img = "/vehicle-images/mercedes-benz-sprinter-jet-van.jpg";
 
 export const Route = createFileRoute("/special-occasions")({
-  head: () => ({
-    meta: [
-      { title: "Special Occasions \u2014 Skyrun Limo Chicago" },
-      {
-        name: "description",
-        content:
-          "Chauffeured transportation for weddings, celebrations, proms and evenings out in Chicago.",
-      },
-      { property: "og:title", content: "Special Occasions \u2014 Skyrun Limo Chicago" },
-      {
-        property: "og:description",
-        content:
-          "Chauffeured transportation for weddings, celebrations, proms and evenings out in Chicago.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    publicSeo(
+      "/special-occasions",
+      "Wedding & Special Event Chauffeur Service | Skyrun Limo",
+      "Request chauffeured transportation for weddings, celebrations, proms and evenings out in Chicago. Share your event date, schedule and vehicle preference.",
+    ),
+
   component: SpecialOccasionsPage,
 });
 

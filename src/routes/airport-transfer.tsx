@@ -1,27 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { JourneyContent } from "@/components/journey-content";
 import { InnerPage } from "@/components/inner-page";
+import { publicSeo } from "@/lib/seo";
 const img = "/vehicle-images/cadillac-escalade-esv-preview.jpg";
 
 export const Route = createFileRoute("/airport-transfer")({
-  head: () => ({
-    meta: [
-      { title: "Airport Transfers \u2014 Skyrun Limo Chicago" },
-      {
-        name: "description",
-        content:
-          "Request a private transfer for O'Hare or Midway across Chicago and surrounding suburbs.",
-      },
-      { property: "og:title", content: "Airport Transfers \u2014 Skyrun Limo Chicago" },
-      {
-        property: "og:description",
-        content:
-          "Request a private transfer for O'Hare or Midway across Chicago and surrounding suburbs.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    publicSeo(
+      "/airport-transfer",
+      "O’Hare & Midway Airport Car Service | Skyrun Limo",
+      "Request a private chauffeur transfer to or from O’Hare (ORD) and Midway (MDW) in Chicago and nearby suburbs. Share your flight and pickup details so the team can confirm arrangements.",
+    ),
+
   component: AirportTransferPage,
 });
 

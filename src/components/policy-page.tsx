@@ -1,18 +1,12 @@
 import { ArrowUpRight, FileText } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { POLICIES, type PolicySlug } from "@/lib/policy-content";
+import { publicSeo } from "@/lib/seo";
 
 export function policyHead(slug: PolicySlug) {
-  const title = `${POLICIES[slug].title} — Skyrun Limo`;
-  const description = `Read Skyrun Limo’s ${POLICIES[slug].title.toLowerCase()}.`;
-  return {
-    meta: [
-      { title },
-      { name: "description", content: description },
-      { property: "og:title", content: title },
-      { property: "og:description", content: description },
-    ],
-  };
+  const title = `${POLICIES[slug].title} | Skyrun Limo`;
+  const description = `Read Skyrun Limo’s ${POLICIES[slug].title.toLowerCase()} and information about chauffeur service enquiries.`;
+  return publicSeo(`/${slug}`, title, description);
 }
 
 export function PolicyPage({ slug }: { slug: PolicySlug }) {

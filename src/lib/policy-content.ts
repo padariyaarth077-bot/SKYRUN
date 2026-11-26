@@ -573,6 +573,7 @@ export const POLICIES: Record<PolicySlug, PolicyDocument> = {
           "Functional technologies may remember preferences or improve the experience. Where required by law, they will be used only after appropriate consent or another valid legal basis has been established.",
           "If enabled, analytics and performance technologies may help Skyrun understand page visits, traffic sources, navigation patterns, and performance. Providers, data collected, retention settings, and consent requirements depend on the tools deployed.",
           "If Skyrun uses advertising pixels, retargeting tools, or similar technologies, they may measure advertising performance or support targeted advertising. These must be disclosed and controlled in accordance with applicable law.",
+          "The website uses Meta Pixel to measure page visits and successful ride or contact enquiries only after a visitor accepts marketing cookies. The website sends standard PageView and Lead events without adding names, phone numbers, addresses, or other form fields as event parameters. Visitors can change this choice using Cookie settings in the footer.",
         ],
       },
       {
@@ -585,6 +586,7 @@ export const POLICIES: Record<PolicySlug, PolicyDocument> = {
         heading: "5. Cookie Consent and Preferences",
         paragraphs: [
           "Where applicable law requires consent for non-essential cookies or similar technologies, Skyrun will provide an appropriate consent mechanism before those technologies operate. You can also manage cookies through your browser settings; blocking some cookies may affect website features.",
+          "Meta Pixel is disabled until marketing consent is accepted. Rejecting optional cookies keeps it disabled. Use Cookie settings in the footer to change your choice.",
         ],
       },
       {

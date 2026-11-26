@@ -42,7 +42,7 @@ export function InnerPage({
             <img
               src={image}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover opacity-40"
+              className="absolute inset-0 h-full w-full object-cover"
             />
           )}
           <div className="page-width relative py-24 md:py-32">
@@ -89,7 +89,7 @@ export function InnerPage({
         {showFaq && (
           <section className="page-width py-16 max-w-3xl faq-list">
             {faqs.map((f) => (
-              <details key={f.question}>
+              <details name="skyrun-faq" key={f.question}>
                 <summary>
                   {f.question}
                   <ChevronDown aria-hidden="true" />
@@ -110,7 +110,7 @@ export function InnerPage({
 
         {!legal && !showForm && (
           <section className="section-dark">
-            <div className="page-width py-16 flex flex-wrap items-center justify-between gap-6">
+            <div className="page-width py-10 md:py-12 flex flex-wrap items-center justify-between gap-6">
               <h2 className="font-display text-4xl">Ready when you are.</h2>
               <div className="flex gap-4 flex-wrap">
                 <Button asChild className="button-gold button-large">

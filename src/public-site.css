@@ -3524,7 +3524,7 @@
     display: flex;
     box-sizing: border-box;
     width: calc(100% - 40px);
-    margin-top: 22px;
+    margin-top: 32px;
     padding: 12px;
     flex-direction: column;
     gap: 8px;
@@ -3538,6 +3538,13 @@
 }
 
 /* Final mobile overrides follow legacy theme blocks so they win the cascade. */
+.public-site .hero-bottom {
+  position: relative;
+  inset: auto;
+  align-self: center;
+  margin-top: 40px;
+}
+
 @media (max-width: 640px) {
   .public-site .header-inner {
     width: calc(100% - 24px);
@@ -3597,5 +3604,190 @@
   .public-site .header-book::after {
     content: "Book";
     font: 700 11px/1.2 var(--font-sans);
+  }
+}
+
+/* Keep service photography visible while the copy stays easy to read. */
+.public-site .inner-hero > img {
+  opacity: 1;
+  object-position: 72% 58%;
+}
+.public-site .inner-hero::after {
+  background: linear-gradient(
+    90deg,
+    #f1e9d8 0%,
+    #f1e9d8f2 36%,
+    #f1e9d8cf 54%,
+    #f1e9d866 74%,
+    #f1e9d81a 100%
+  );
+}
+.about-journey > img {
+  opacity: 0.52;
+}
+.about-journey::after {
+  background: linear-gradient(90deg, #efe3caf5 3%, #efe3cadb 46%, #efe3ca70 70%, #efe3ca18 100%);
+}
+.about-journey strong {
+  color: #173451;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+/* Keep the photo outline on the photo, with its caption aligned below it. */
+.editorial-photo {
+  padding: 0 20px 0 0;
+}
+.editorial-photo-frame {
+  position: relative;
+}
+.editorial-photo-frame::after {
+  content: "";
+  position: absolute;
+  inset: 22px -20px -20px 22px;
+  z-index: 0;
+  border: 1px solid #b8cbe6;
+  border-radius: 20px;
+  pointer-events: none;
+}
+.editorial-photo-frame img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.15;
+  object-fit: cover;
+  border-radius: 20px;
+}
+.editorial-photo figcaption {
+  margin-top: 32px;
+  padding: 0;
+  letter-spacing: 0.1em;
+}
+.contact-card-grid .contact-person-name {
+  color: #173451;
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.contact-enquiry-form {
+  display: grid;
+  gap: 18px;
+}
+.contact-enquiry-form > .mobility-kicker {
+  margin: 0;
+}
+.contact-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.contact-form-grid label {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  color: #173451;
+  font-size: 14px;
+  font-weight: 650;
+}
+.contact-form-grid .contact-message-field {
+  grid-column: 1 / -1;
+}
+.contact-form-grid :is(input, textarea) {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 54px;
+  border: 1px solid #d7dfe7;
+  border-radius: 12px;
+  padding: 13px 15px;
+  background: #fff;
+  color: #173451;
+  font: 400 16px/1.55 var(--font-sans);
+}
+.contact-form-grid textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+.contact-form-grid :is(input, textarea):focus-visible {
+  outline: 3px solid #17345126;
+  border-color: #173451;
+}
+.contact-form-error,
+.contact-form-success,
+.contact-form-note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.contact-form-error {
+  color: #9b1c1c !important;
+}
+.contact-form-success {
+  color: #245d42 !important;
+}
+.contact-form-note {
+  color: #52677c !important;
+}
+.contact-enquiry-form button:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.cookie-consent {
+  position: fixed;
+  z-index: 120;
+  inset: auto 20px 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 980px;
+  margin-inline: auto;
+  padding: 18px 22px;
+  border: 1px solid #d8c7a5;
+  background: #fffdf8;
+  color: #173451;
+  box-shadow: 0 12px 36px #1734512b;
+}
+.cookie-consent strong { display: block; font-size: 15px; }
+.cookie-consent p { margin: 4px 0; max-width: 590px; font-size: 13px; line-height: 1.5; }
+.cookie-consent a, .cookie-settings-link { color: #435b73; text-decoration: underline; text-underline-offset: 3px; font-size: 12px; }
+.cookie-consent-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+.cookie-consent-actions button { min-height: 42px; padding: 0 14px; border: 1px solid #c79b43; background: transparent; color: #173451; font: inherit; font-size: 13px; cursor: pointer; }
+.cookie-consent-actions .cookie-choice-primary { background: #c79b43; color: #142c40; font-weight: 700; }
+.cookie-consent-actions button:focus-visible, .cookie-settings-link:focus-visible { outline: 3px solid #173451; outline-offset: 3px; }
+.cookie-settings-link { border: 0; background: transparent; cursor: pointer; }
+@media (max-width: 640px) {
+  .cookie-consent { inset: auto 10px 10px; display: block; padding: 16px; }
+  .cookie-consent-actions { margin-top: 12px; }
+  .cookie-consent-actions button { flex: 1; padding-inline: 8px; }
+}
+
+@media (max-width: 640px) {
+  .public-site .inner-hero::after {
+    background: linear-gradient(
+      180deg,
+      #f1e9d8 0%,
+      #f1e9d8f5 50%,
+      #f1e9d8d1 70%,
+      #f1e9d870 100%
+    );
+  }
+  .editorial-photo {
+    padding-right: 12px;
+  }
+  .editorial-photo-frame::after {
+    inset: 14px -12px -12px 14px;
+  }
+  .editorial-photo figcaption {
+    margin-top: 22px;
+    font-size: 11px;
+    letter-spacing: 0.07em;
+  }
+  .contact-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .contact-form-grid .contact-message-field {
+    grid-column: auto;
   }
 }

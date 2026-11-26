@@ -1,27 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { JourneyContent } from "@/components/journey-content";
 import { InnerPage } from "@/components/inner-page";
+import { publicSeo } from "@/lib/seo";
 import img from "@/assets/skyrun-chicago.jpg";
 
 export const Route = createFileRoute("/about")({
-  head: () => ({
-    meta: [
-      { title: "About Skyrun Limo \u2014 Chicago Chauffeur Service" },
-      {
-        name: "description",
-        content:
-          "Meet Skyrun Limo LLC, a Chicago transportation company led by Vrund Patel and Nisharg Patel.",
-      },
-      { property: "og:title", content: "About Skyrun Limo \u2014 Chicago Chauffeur Service" },
-      {
-        property: "og:description",
-        content:
-          "Meet Skyrun Limo LLC, a Chicago transportation company led by Vrund Patel and Nisharg Patel.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    publicSeo(
+      "/about",
+      "About Skyrun Limo LLC | Chicago Chauffeur Service",
+      "Skyrun Limo LLC is led by Vrund Patel and Nisharg Patel. The team arranges private chauffeur transportation in Chicago and surrounding suburbs.",
+    ),
+
   component: AboutPage,
 });
 

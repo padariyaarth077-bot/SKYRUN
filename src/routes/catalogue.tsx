@@ -2,18 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { VehicleCatalogue } from "@/components/vehicle-catalogue";
+import { publicSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/catalogue")({
-  head: () => ({
-    meta: [
-      { title: "Vehicle Catalogue — Skyrun Limo" },
-      {
-        name: "description",
-        content:
-          "View Skyrun Limo vehicle models. Vehicle suitability, capacity and availability are confirmed for each enquiry.",
-      },
-    ],
-  }),
+  head: () =>
+    publicSeo(
+      "/catalogue",
+      "Skyrun Limo Vehicle Catalogue | Chicago Chauffeur Service",
+      "Browse vehicle models used across Skyrun’s chauffeur categories. Vehicle suitability and availability are confirmed for each journey request.",
+    ),
+
   component: Catalogue,
 });
 function Catalogue() {

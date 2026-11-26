@@ -1,26 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicFleet } from "@/components/public-fleet";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { publicSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/fleet")({
-  head: () => ({
-    meta: [
-      { title: "Fleet \u2014 Skyrun Limo Chicago" },
-      {
-        name: "description",
-        content:
-          "Luxury sedan, SUV and executive vehicle categories available on request in Chicago.",
-      },
-      { property: "og:title", content: "Fleet \u2014 Skyrun Limo Chicago" },
-      {
-        property: "og:description",
-        content:
-          "Luxury sedan, SUV and executive vehicle categories available on request in Chicago.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    publicSeo(
+      "/fleet",
+      "Chicago Limo Fleet | Sedans, SUVs & Special Vehicles | Skyrun Limo",
+      "Explore Skyrun’s regular sedan and SUV categories and special vehicles for chauffeur service in Chicago. Availability and suitability are confirmed for each request.",
+    ),
+
   component: FleetPage,
 });
 

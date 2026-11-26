@@ -15,6 +15,7 @@ import chicagoImage from "@/assets/skyrun-chicago.jpg";
 export { Brand };
 import { VEHICLE_MODELS } from "@/lib/vehicle-images";
 import { REGULAR_FLEET } from "@/lib/public-fleet";
+import { trackLead } from "@/lib/meta-pixel";
 export const faqs = [
   {
     question: "How do I request a Skyrun ride?",
@@ -24,7 +25,7 @@ export const faqs = [
   {
     question: "Do you provide airport transportation?",
     answer:
-      "Airport transportation is part of Skyrun's service offering. Include your airport, flight schedule, pickup details, and luggage needs in your request.",
+      "Skyrun accepts private chauffeur transfer requests to or from O’Hare (ORD) and Midway (MDW) in Chicago and nearby suburbs. Share your flight, pickup and luggage details so the team can confirm arrangements.",
   },
   {
     question: "Can I request hourly or corporate transportation?",
@@ -121,6 +122,7 @@ export function BookingForm({
         if (!r.ok || !r.reference) throw new Error("Missing confirmation");
         setStatus("");
         setReference(r.reference);
+        trackLead(r.reference);
         submissionKey.current = null;
         form.reset();
         setSelectedVehicle(initialVehicle);
@@ -445,13 +447,15 @@ export function HomePage() {
         <PublicFleet preview />
         <section className="page-width mobility-section destination-grid">
           <figure className="editorial-photo">
-            <img
-              src="/vehicle-images/cadillac-escalade-esv-2.jpg"
-              alt="Cadillac Escalade ESV exterior"
-              loading="lazy"
-              width="515"
-              height="388"
-            />
+            <div className="editorial-photo-frame">
+              <img
+                src="/vehicle-images/cadillac-escalade-esv-2.jpg"
+                alt="Cadillac Escalade ESV exterior"
+                loading="lazy"
+                width="515"
+                height="388"
+              />
+            </div>
             <figcaption>FOR THE ARRIVAL. AND EVERYTHING AFTER.</figcaption>
           </figure>
           <div>
@@ -486,8 +490,9 @@ export function HomePage() {
               behind your journey.
             </h2>
             <p>
-              Skyrun Limo LLC is led by Vrund Patel and Nisharg Patel. From everyday plans to
-              special occasions, start a conversation with the people arranging your ride.
+              <strong>Skyrun Limo LLC</strong> is led by <strong>Vrund Patel</strong> and{" "}
+              <strong>Nisharg Patel</strong>. From everyday plans to special occasions, start a
+              conversation with the people arranging your ride.
             </p>
             <Link className="secondary-action" to="/about">
               Get to know Skyrun <ArrowUpRight size={18} />
@@ -508,7 +513,7 @@ export function HomePage() {
           </div>
           <div className="faq-list">
             {faqs.slice(0, 4).map((faq) => (
-              <details key={faq.question}>
+              <details name="skyrun-faq" key={faq.question}>
                 <summary>
                   {faq.question}
                   <span aria-hidden="true">+</span>

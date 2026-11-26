@@ -1,4 +1,5 @@
 import { EnquiryConfirmation } from "@/components/enquiry-confirmation";
+import { trackLead } from "@/lib/meta-pixel";
 import { usePolling } from "@/lib/use-polling";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Loader2, RotateCw, Send, UserRound, X } from "lucide-react";
@@ -183,6 +184,7 @@ export function ChatWidget() {
     try {
       const result = await submitChatContact({ data: { session, ...contact } });
       if (!result.ok || !result.reference) throw new Error("Missing confirmation");
+      trackLead(result.reference);
       setShowContact(false);
       await refresh(session);
       setNotice(result.reference);
